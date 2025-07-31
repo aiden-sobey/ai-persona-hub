@@ -17,12 +17,14 @@ export async function listCommand(): Promise<void> {
     profiles.forEach(profile => {
       console.log(chalk.white(`• ${profile.name}`));
       console.log(chalk.gray(`  ID: ${profile.id}`));
-      console.log(chalk.gray(`  Provider: ${profile.provider}`));
-      console.log(chalk.gray(`  Model: ${profile.model}`));
       console.log(chalk.gray(`  Created: ${new Date(profile.createdAt).toLocaleDateString()}`));
       
       if (profile.lastUsed) {
         console.log(chalk.gray(`  Last used: ${new Date(profile.lastUsed).toLocaleDateString()}`));
+      }
+      
+      if (profile.maxTokens) {
+        console.log(chalk.gray(`  Max tokens: ${profile.maxTokens}`));
       }
       
       const promptPreview = profile.systemPrompt.slice(0, 100);

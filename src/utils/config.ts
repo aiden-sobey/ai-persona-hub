@@ -5,8 +5,8 @@ import { AIProvider, ProviderConfig } from '../types';
 
 export interface AppConfig {
   providers?: ProviderConfig;
-  defaultProvider?: AIProvider;
-  defaultTemperature?: number;
+  currentProvider?: AIProvider;
+  currentModel?: string;
   defaultMaxTokens?: number;
 }
 
@@ -91,5 +91,39 @@ export class ConfigManager {
     }
     
     return providers;
+  }
+
+  getCurrentProvider(): AIProvider | null {
+    const config = this.getConfig();
+    return config.currentProvider || null;
+  }
+
+  getCurrentModel(): string | null {
+    const config = this.getConfig();
+    return config.currentModel || null;
+  }
+
+  setCurrentProvider(provider: AIProvider): void {
+    const config = this.getConfig();
+    config.currentProvider = provider;
+    this.setConfig(config);
+  }
+
+  setCurrentModel(model: string): void {
+    const config = this.getConfig();
+    config.currentModel = model;
+    this.setConfig(config);
+  }
+
+  setCurrentProviderAndModel(provider: AIProvider, model: string): void {
+    const config = this.getConfig();
+    config.currentProvider = provider;
+    config.currentModel = model;
+    this.setConfig(config);
+  }
+
+  hasCurrentProviderAndModel(): boolean {
+    const config = this.getConfig();
+    return !!(config.currentProvider && config.currentModel);
   }
 }

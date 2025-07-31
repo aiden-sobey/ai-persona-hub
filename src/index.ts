@@ -6,6 +6,7 @@ import { createCommand } from './commands/create';
 import { listCommand } from './commands/list';
 import { deleteCommand } from './commands/delete';
 import { chatCommand } from './commands/chat';
+import { modelCommand, modelListCommand } from './commands/model';
 
 const program = new Command();
 
@@ -35,6 +36,16 @@ program
   .alias('rm')
   .description('Delete an AI profile')
   .action(deleteCommand);
+
+const modelCmd = program
+  .command('model')
+  .description('Configure AI model settings')
+  .action(modelCommand);
+
+modelCmd
+  .command('list')
+  .description('List available AI models')
+  .action(modelListCommand);
 
 program.on('command:*', (operands) => {
   console.error(chalk.red(`Unknown command: ${operands[0]}`));

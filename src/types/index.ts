@@ -4,9 +4,6 @@ export interface AIProfile {
   id: string;
   name: string;
   systemPrompt: string;
-  provider: AIProvider;
-  model: string;
-  temperature?: number;
   maxTokens?: number;
   createdAt: string;
   lastUsed?: string;
@@ -29,7 +26,6 @@ export interface ConversationState {
 export interface AIConfig {
   provider: AIProvider;
   model: string;
-  temperature?: number;
   maxTokens?: number;
 }
 

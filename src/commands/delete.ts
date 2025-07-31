@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { ProfileManager } from '../services/profile-manager';
 
 export async function deleteCommand(profileName: string): Promise<void> {
-  if (!profileName) {
+  if (!profileName || !profileName.trim()) {
     console.error(chalk.red('❌ Profile name is required'));
     console.log(chalk.gray('Usage: cgem delete <profile-name>'));
     process.exit(1);
@@ -21,8 +21,10 @@ export async function deleteCommand(profileName: string): Promise<void> {
     console.log(chalk.yellow(`\n⚠️  You are about to delete the profile:`));
     console.log(chalk.white(`   Name: ${profile.name}`));
     console.log(chalk.gray(`   ID: ${profile.id}`));
-    console.log(chalk.gray(`   Model: ${profile.model}`));
     console.log(chalk.gray(`   Created: ${new Date(profile.createdAt).toLocaleDateString()}`));
+    if (profile.maxTokens) {
+      console.log(chalk.gray(`   Max tokens: ${profile.maxTokens}`));
+    }
 
     const { confirmed } = await inquirer.prompt([
       {

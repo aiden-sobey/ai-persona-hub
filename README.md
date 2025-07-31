@@ -8,7 +8,8 @@ A command-line interface for creating and managing custom AI profiles powered by
 - 🤖 **Multi-Provider Support**: OpenAI, Anthropic (Claude), Google (Gemini)
 - 💬 Interactive chat sessions with your AI profiles
 - 📋 List and manage all your profiles
-- 🔧 Configurable model settings (temperature, max tokens)
+- 🔄 **Dynamic Model Switching**: Change AI provider/model anytime without recreating profiles
+- 🔧 Configurable max tokens per profile
 - 💾 Local JSON-based profile storage
 - ⚡ Powered by Mastra AI framework
 
@@ -38,11 +39,17 @@ export GOOGLE_GENERATIVE_AI_API_KEY="your-google-key"
 
 ## Usage
 
+### Configure AI model (required first step)
+```bash
+./bin/cgem model
+```
+*Select your preferred AI provider and model*
+
 ### Create a new profile
 ```bash
 ./bin/cgem create
 ```
-*Interactively select provider, model, and configure your custom AI profile*
+*Create a custom AI profile with system prompt (works with any model)*
 
 ### List all profiles
 ```bash
@@ -52,6 +59,12 @@ export GOOGLE_GENERATIVE_AI_API_KEY="your-google-key"
 ### Start a chat with a profile
 ```bash
 ./bin/cgem chat <profile-name>
+```
+*Chat with any profile using your currently configured model*
+
+### List available models
+```bash
+./bin/cgem model list
 ```
 
 ### Delete a profile
@@ -103,8 +116,8 @@ Set API keys via environment variables or in `~/.cgem/config.json`:
       "apiKey": "your-google-key"
     }
   },
-  "defaultProvider": "openai",
-  "defaultTemperature": 0.7,
+  "currentProvider": "openai",
+  "currentModel": "gpt-4o-mini",
   "defaultMaxTokens": 1000
 }
 ```
@@ -134,9 +147,6 @@ Profiles are stored as JSON files with the following structure:
   "id": "profile-id",
   "name": "Profile Name",
   "systemPrompt": "Your custom system prompt...",
-  "provider": "openai",
-  "model": "gpt-4o-mini",
-  "temperature": 0.7,
   "maxTokens": 1000,
   "createdAt": "2025-01-01T00:00:00.000Z",
   "lastUsed": "2025-01-01T00:00:00.000Z"
@@ -152,4 +162,4 @@ Built with:
 - **Inquirer.js** - Interactive prompts
 - **Chalk** - Terminal colors
 
-The application uses Mastra's unified provider API to seamlessly switch between different AI providers while maintaining a consistent interface.
+The application uses Mastra's unified provider API to seamlessly switch between different AI providers while maintaining a consistent interface. The new architecture separates concerns: profiles store system prompts, while provider/model selection is handled globally, allowing maximum flexibility.

@@ -23,11 +23,20 @@ export async function chatCommand(profileName: string): Promise<void> {
       process.exit(1);
     }
 
-    const apiKey = configManager.getProviderApiKey(profile.provider);
+    const currentProvider = configManager.getCurrentProvider();
+    const currentModel = configManager.getCurrentModel();
+
+    if (!currentProvider || !currentModel) {
+      console.error(chalk.red('❌ No AI model configured'));
+      console.log(chalk.gray('Configure a model first with: cgem model'));
+      process.exit(1);
+    }
+
+    const apiKey = configManager.getProviderApiKey(currentProvider);
     if (!apiKey) {
-      console.error(chalk.red(`❌ ${profile.provider} API key not found`));
+      console.error(chalk.red(`❌ ${currentProvider} API key not found`));
       console.log(chalk.gray(`Set your API key with environment variable or in ~/.cgem/config.json:`));
-      switch (profile.provider) {
+      switch (currentProvider) {
         case 'openai':
           console.log(chalk.gray('Environment: OPENAI_API_KEY'));
           break;
@@ -42,9 +51,8 @@ export async function chatCommand(profileName: string): Promise<void> {
     }
 
     const aiClient = new AIClient({
-      provider: profile.provider,
-      model: profile.model,
-      temperature: profile.temperature,
+      provider: currentProvider,
+      model: currentModel,
       maxTokens: profile.maxTokens
     }, apiKey);
 
@@ -61,8 +69,8 @@ export async function chatCommand(profileName: string): Promise<void> {
     await profileManager.updateLastUsed(profileName);
 
     console.log(chalk.blue(`\n💬 Starting conversation with ${chalk.white(profile.name)}`));
-    console.log(chalk.gray(`Provider: ${profile.provider}`));
-    console.log(chalk.gray(`Model: ${profile.model}`));
+    console.log(chalk.gray(`Provider: ${currentProvider}`));
+    console.log(chalk.gray(`Model: ${currentModel}`));
     console.log(chalk.gray('Type "exit" or "quit" to end the conversation\n'));
 
     while (true) {

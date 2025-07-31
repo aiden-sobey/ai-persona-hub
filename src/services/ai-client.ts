@@ -62,7 +62,6 @@ export class AIClient {
       // Use the agent's generate method
       const result = await this.agent.generate(fullPrompt, {
         maxTokens: this.config.maxTokens,
-        temperature: this.config.temperature,
       });
 
       // Extract the text from the result

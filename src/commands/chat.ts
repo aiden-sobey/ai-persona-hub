@@ -4,6 +4,8 @@ import { ProfileManager } from '../services/profile-manager';
 import { ConfigManager } from '../utils/config';
 import { AIClient } from '../services/ai-client';
 import { ConversationState } from '../types';
+import { ChatHistoryManager } from '../services/chat-history-manager';
+import { ChatInputHandler } from '../services/chat-input-handler';
 
 export async function chatCommand(profileName?: string): Promise<void> {
   let selectedProfileName = profileName;
@@ -114,6 +116,13 @@ export async function chatCommand(profileName?: string): Promise<void> {
       ],
     };
 
+    // Initialize chat history manager and load history
+    const chatHistoryManager = new ChatHistoryManager();
+    const chatHistory = await chatHistoryManager.loadChatHistory(profile.id);
+
+    // Initialize input handler with history
+    const inputHandler = new ChatInputHandler(chatHistory.userMessages);
+
     await profileManager.updateLastUsed(selectedProfileName!);
 
     console.log(
@@ -121,66 +130,81 @@ export async function chatCommand(profileName?: string): Promise<void> {
     );
     console.log(chalk.gray(`Provider: ${currentProvider}`));
     console.log(chalk.gray(`Model: ${currentModel}`));
-    console.log(chalk.gray('Type "exit" or "quit" to end the conversation\n'));
+    console.log(chalk.gray('Type "exit" or "quit" to end the conversation'));
+    console.log(
+      chalk.gray('Use ↑ and ↓ arrows to navigate through previous messages\n')
+    );
 
-    while (true) {
-      const { userMessage } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'userMessage',
-          message: chalk.green('You:'),
-          validate: (input: string) => {
-            if (!input.trim()) {
-              return 'Please enter a message';
-            }
-            return true;
-          },
-        },
-      ]);
+    try {
+      while (true) {
+        const userMessage = await inputHandler.promptForInput();
 
-      if (
-        userMessage.toLowerCase() === 'exit' ||
-        userMessage.toLowerCase() === 'quit'
-      ) {
-        console.log(chalk.gray('\nGoodbye! 👋'));
-        break;
-      }
-
-      conversationState.messages.push({
-        role: 'user',
-        content: userMessage,
-      });
-
-      try {
-        console.log(chalk.blue('AI:'), chalk.gray('thinking...'));
-
-        const response = await aiClient.sendMessage(
-          conversationState.messages,
-          (chunk: string) => {
-            process.stdout.write(chunk);
-          }
-        );
-
-        if (!response) {
-          console.log(chalk.red('\n❌ No response from AI'));
+        if (!userMessage.trim()) {
+          console.log(chalk.yellow('Please enter a message'));
           continue;
         }
 
+        if (
+          userMessage.toLowerCase() === 'exit' ||
+          userMessage.toLowerCase() === 'quit'
+        ) {
+          console.log(chalk.gray('\nGoodbye! 👋'));
+          break;
+        }
+
+        // Save the user message to history
+        await chatHistoryManager.addUserMessage(profile.id, userMessage.trim());
+
         conversationState.messages.push({
-          role: 'assistant',
-          content: response,
+          role: 'user',
+          content: userMessage,
         });
 
-        console.log('\n');
-      } catch (error) {
-        console.error(chalk.red('\n❌ Error getting AI response:'));
-        console.error(
-          chalk.red(error instanceof Error ? error.message : 'Unknown error')
-        );
-        console.log(
-          chalk.gray(
-            'You can continue the conversation or type "exit" to quit.\n'
-          )
+        try {
+          console.log(chalk.blue('AI:'), chalk.gray('thinking...'));
+
+          const response = await aiClient.sendMessage(
+            conversationState.messages,
+            (chunk: string) => {
+              process.stdout.write(chunk);
+            }
+          );
+
+          if (!response) {
+            console.log(chalk.red('\n❌ No response from AI'));
+            continue;
+          }
+
+          conversationState.messages.push({
+            role: 'assistant',
+            content: response,
+          });
+
+          console.log('\n');
+        } catch (error) {
+          console.error(chalk.red('\n❌ Error getting AI response:'));
+          console.error(
+            chalk.red(error instanceof Error ? error.message : 'Unknown error')
+          );
+          console.log(
+            chalk.gray(
+              'You can continue the conversation or type "exit" to quit.\n'
+            )
+          );
+        }
+      }
+    } finally {
+      // Clean up input handler
+      inputHandler.close();
+
+      // Save the full conversation if it has user messages
+      const userMessages = conversationState.messages.filter(
+        m => m.role === 'user'
+      );
+      if (userMessages.length > 0) {
+        await chatHistoryManager.saveConversation(
+          profile.id,
+          conversationState.messages
         );
       }
     }

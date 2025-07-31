@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Build and Development
+
 ```bash
 npm run build          # Compile TypeScript to dist/
 npm run dev            # Watch mode during development
@@ -12,6 +13,7 @@ npm start              # Run compiled JS directly
 ```
 
 ### Testing
+
 ```bash
 npm test               # Run all tests
 npm run test:watch     # Run tests in watch mode
@@ -20,6 +22,7 @@ npm run test:verbose   # Run tests with verbose output
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint:fix       # Run ESLint and Prettier with auto-fix
 npm run lint:check     # Check for linting/formatting violations without fixing
@@ -28,6 +31,7 @@ npm run lint:check     # Check for linting/formatting violations without fixing
 **IMPORTANT**: Both `npm run lint:check` and `npm run build` must pass (exit code 0) before any task is considered completed by Claude. Always run these commands after making code changes to ensure code quality standards are met.
 
 ### CLI Usage (after build)
+
 ```bash
 ./bin/cgem model       # Configure AI provider/model (required first step)
 ./bin/cgem create      # Create new AI profile
@@ -46,7 +50,8 @@ This is a TypeScript CLI application that creates and manages AI profiles across
 
 **Unified AI Interface**: Uses Mastra's `Agent` class to provide a consistent interface across different AI providers. The `AIClient` class abstracts provider-specific SDK initialization and model configuration.
 
-**Local Storage Strategy**: 
+**Local Storage Strategy**:
+
 - AI profiles stored as JSON files in `./profiles/` directory
 - Global configuration stored in `~/.cgem/config.json` (provider keys, current model)
 - Profile names are sanitized and used as filenames
@@ -70,6 +75,7 @@ This is a TypeScript CLI application that creates and manages AI profiles across
 ### Testing Setup
 
 Uses Jest with TypeScript support. Key testing patterns:
+
 - Comprehensive mocking of external dependencies (fs, Mastra, inquirer, chalk)
 - Service-layer unit tests with dependency injection
 - Command integration tests with CLI argument simulation
@@ -78,6 +84,7 @@ Uses Jest with TypeScript support. Key testing patterns:
 ### Environment Configuration
 
 API keys can be provided via:
+
 1. Environment variables (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`)
 2. Config file at `~/.cgem/config.json`
 

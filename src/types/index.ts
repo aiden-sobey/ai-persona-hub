@@ -37,6 +37,25 @@ export interface ProviderConfig {
   };
 }
 
+export interface ConversationMetadata {
+  id: string;
+  profileId: string;
+  startedAt: string;
+  lastMessageAt: string;
+  messageCount: number;
+}
+
+export interface ChatHistory {
+  profileId: string;
+  userMessages: string[];
+  lastUpdated: string;
+}
+
+export interface SavedConversation {
+  metadata: ConversationMetadata;
+  messages: ChatMessage[];
+}
+
 export const PROVIDER_MODELS: Record<AIProvider, string[]> = {
   openai: [
     'gpt-4o',

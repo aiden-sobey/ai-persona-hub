@@ -2,7 +2,7 @@ import { Agent } from '@mastra/core';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
-import { AIProvider, AIConfig, ChatMessage } from '../types';
+import { AIConfig, ChatMessage } from '../types';
 
 export class AIClient {
   private agent: Agent;

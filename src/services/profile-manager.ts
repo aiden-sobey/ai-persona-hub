@@ -1,14 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { AIProfile, ProfileIndex } from '../types';
+import { AIProfile } from '../types';
 
 export class ProfileManager {
   private profilesDir: string;
-  private indexPath: string;
 
   constructor(profilesDir: string = './profiles') {
     this.profilesDir = path.resolve(profilesDir);
-    this.indexPath = path.join(this.profilesDir, 'index.json');
     this.ensureProfilesDirectory();
   }
 
@@ -16,23 +14,8 @@ export class ProfileManager {
     if (!fs.existsSync(this.profilesDir)) {
       fs.mkdirSync(this.profilesDir, { recursive: true });
     }
-    if (!fs.existsSync(this.indexPath)) {
-      this.writeIndex({ profiles: [] });
-    }
   }
 
-  private readIndex(): ProfileIndex {
-    try {
-      const data = fs.readFileSync(this.indexPath, 'utf-8');
-      return JSON.parse(data);
-    } catch (error) {
-      return { profiles: [] };
-    }
-  }
-
-  private writeIndex(index: ProfileIndex): void {
-    fs.writeFileSync(this.indexPath, JSON.stringify(index, null, 2));
-  }
 
   private getProfilePath(profileName: string): string {
     return path.join(this.profilesDir, `${profileName}.json`);
@@ -40,6 +23,19 @@ export class ProfileManager {
 
   private sanitizeProfileName(name: string): string {
     return name.toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+  }
+
+  private validateProfile(data: any): data is AIProfile {
+    return (
+      typeof data === 'object' &&
+      data !== null &&
+      typeof data.id === 'string' &&
+      typeof data.name === 'string' &&
+      typeof data.systemPrompt === 'string' &&
+      typeof data.createdAt === 'string' &&
+      (data.maxTokens === undefined || typeof data.maxTokens === 'number') &&
+      (data.lastUsed === undefined || typeof data.lastUsed === 'string')
+    );
   }
 
   async createProfile(profile: Omit<AIProfile, 'id' | 'createdAt'>): Promise<AIProfile> {
@@ -57,10 +53,6 @@ export class ProfileManager {
     }
 
     fs.writeFileSync(profilePath, JSON.stringify(newProfile, null, 2));
-
-    const index = this.readIndex();
-    index.profiles.push(sanitizedName);
-    this.writeIndex(index);
 
     return newProfile;
   }
@@ -82,14 +74,34 @@ export class ProfileManager {
   }
 
   async listProfiles(): Promise<AIProfile[]> {
-    const index = this.readIndex();
     const profiles: AIProfile[] = [];
 
-    for (const profileName of index.profiles) {
-      const profile = await this.getProfile(profileName);
-      if (profile) {
-        profiles.push(profile);
+    try {
+      if (!fs.existsSync(this.profilesDir)) {
+        return profiles;
       }
+
+      const files = fs.readdirSync(this.profilesDir);
+      const jsonFiles = files.filter(file => 
+        file.endsWith('.json') && file !== 'index.json'
+      );
+
+      for (const file of jsonFiles) {
+        try {
+          const filePath = path.join(this.profilesDir, file);
+          const data = fs.readFileSync(filePath, 'utf-8');
+          const profileData = JSON.parse(data);
+          
+          if (this.validateProfile(profileData)) {
+            profiles.push(profileData);
+          }
+        } catch (error) {
+          // Skip invalid/corrupted profile files
+          console.warn(`Warning: Could not load profile from ${file}:`, error instanceof Error ? error.message : 'Unknown error');
+        }
+      }
+    } catch (error) {
+      console.error('Error scanning profiles directory:', error instanceof Error ? error.message : 'Unknown error');
     }
 
     return profiles.sort((a, b) => a.name.localeCompare(b.name));
@@ -117,10 +129,6 @@ export class ProfileManager {
     }
 
     fs.unlinkSync(profilePath);
-
-    const index = this.readIndex();
-    index.profiles = index.profiles.filter(p => p !== sanitizedName);
-    this.writeIndex(index);
 
     return true;
   }

@@ -11,7 +11,6 @@ const mockFs = fs as any;
 describe('ProfileManager', () => {
   let profileManager: ProfileManager;
   const testProfilesDir = '/test/profiles';
-  const indexPath = '/test/profiles/index.json';
 
   beforeEach(() => {
     // Reset mocks
@@ -19,9 +18,7 @@ describe('ProfileManager', () => {
     
     // Set up default file system state
     mockFs.__setMockDirectories([testProfilesDir]);
-    mockFs.__setMockFiles({
-      [indexPath]: JSON.stringify({ profiles: [] }),
-    });
+    mockFs.__setMockFiles({});
     
     profileManager = new ProfileManager(testProfilesDir);
   });
@@ -39,24 +36,6 @@ describe('ProfileManager', () => {
       expect(fs.mkdirSync).toHaveBeenCalledWith(testProfilesDir, { recursive: true });
     });
 
-    test('should create index.json if it does not exist', () => {
-      mockFs.__setMockDirectories([testProfilesDir]);
-      mockFs.__setMockFiles({}); // No index file
-      
-      new ProfileManager(testProfilesDir);
-      
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        indexPath,
-        JSON.stringify({ profiles: [] }, null, 2)
-      );
-    });
-
-    test('should not create index.json if it already exists', () => {
-      new ProfileManager(testProfilesDir);
-      
-      // writeFileSync should only be called once during setup, not again
-      expect(fs.writeFileSync).toHaveBeenCalledTimes(0);
-    });
   });
 
   describe('createProfile', () => {
@@ -83,12 +62,6 @@ describe('ProfileManager', () => {
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         profilePath,
         expect.stringContaining('"name": "Test Profile"')
-      );
-
-      // Check that index was updated
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        indexPath,
-        JSON.stringify({ profiles: ['test-profile'] }, null, 2)
       );
     });
 

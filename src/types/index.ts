@@ -9,9 +9,6 @@ export interface AIProfile {
   lastUsed?: string;
 }
 
-export interface ProfileIndex {
-  profiles: string[];
-}
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';

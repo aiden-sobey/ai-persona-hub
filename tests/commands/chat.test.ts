@@ -48,6 +48,7 @@ describe('chatCommand', () => {
     mockProfileManager = {
       getProfile: jest.fn(),
       updateLastUsed: jest.fn(),
+      listProfiles: jest.fn(),
     };
     MockProfileManager.mockImplementation(() => mockProfileManager);
     
@@ -94,6 +95,50 @@ describe('chatCommand', () => {
     console.error = originalConsoleError;
     process.exit = originalProcessExit;
     process.stdout.write = originalStdoutWrite;
+  });
+
+  describe('interactive profile selection', () => {
+    test('should display available profiles when no profile name provided', async () => {
+      const mockProfiles = [
+        createMockProfile({ id: 'profile1', name: 'Profile 1', systemPrompt: 'Test prompt 1' }),
+        createMockProfile({ id: 'profile2', name: 'Profile 2', systemPrompt: 'Test prompt 2' })
+      ];
+      mockProfileManager.listProfiles.mockResolvedValue(mockProfiles);
+      mockInquirer.__setMockResponses({ selectedProfile: 'profile1' });
+      mockConfigManager.getCurrentProvider.mockReturnValue(null);
+
+      await chatCommand();
+
+      expect(mockProfileManager.listProfiles).toHaveBeenCalled();
+      expect(mockInquirer.prompt).toHaveBeenCalledWith([{
+        type: 'list',
+        name: 'selectedProfile',
+        message: 'Select a profile to chat with:',
+        choices: expect.any(Array),
+        pageSize: 10
+      }]);
+    });
+
+    test('should auto-select single profile', async () => {
+      const mockProfile = createMockProfile({ id: 'single', name: 'Single Profile' });
+      mockProfileManager.listProfiles.mockResolvedValue([mockProfile]);
+      mockConfigManager.getCurrentProvider.mockReturnValue(null);
+
+      await chatCommand();
+
+      expect(consoleLogs.some(log => log.includes('Using profile: Single Profile'))).toBe(true);
+      expect(mockInquirer.prompt).not.toHaveBeenCalled();
+    });
+
+    test('should show create message when no profiles exist', async () => {
+      mockProfileManager.listProfiles.mockResolvedValue([]);
+
+      await chatCommand();
+
+      expect(consoleLogs.some(log => log.includes('No profiles found. Create one with:'))).toBe(true);
+      expect(consoleLogs.some(log => log.includes('cgem create'))).toBe(true);
+      expect(processExitCode).toBe(0);
+    });
   });
 
   describe('parameter validation', () => {

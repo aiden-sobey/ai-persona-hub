@@ -27,7 +27,7 @@ program
   .action(listCommand);
 
 program
-  .command('chat <profile-name>')
+  .command('chat [profile-name]')
   .description('Start a conversation with an AI profile')
   .action(chatCommand);
 

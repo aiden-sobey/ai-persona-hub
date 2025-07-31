@@ -5,20 +5,58 @@ import { ConfigManager } from '../utils/config';
 import { AIClient } from '../services/ai-client';
 import { ChatMessage, ConversationState } from '../types';
 
-export async function chatCommand(profileName: string): Promise<void> {
-  if (!profileName) {
-    console.error(chalk.red('❌ Profile name is required'));
-    console.log(chalk.gray('Usage: cgem chat <profile-name>'));
-    process.exit(1);
+export async function chatCommand(profileName?: string): Promise<void> {
+  let selectedProfileName = profileName;
+
+  if (!selectedProfileName) {
+    const profileManager = new ProfileManager();
+    const profiles = await profileManager.listProfiles();
+
+    if (profiles.length === 0) {
+      console.log(chalk.yellow('No profiles found. Create one with:'));
+      console.log(chalk.white('cgem create'));
+      process.exit(0);
+    }
+
+    if (profiles.length === 1) {
+      selectedProfileName = profiles[0].id;
+      console.log(chalk.blue(`Using profile: ${profiles[0].name}`));
+    } else {
+      const choices = profiles.map(profile => {
+        const lastUsed = profile.lastUsed 
+          ? `Last used: ${new Date(profile.lastUsed).toLocaleDateString()}`
+          : 'Never used';
+        const promptPreview = profile.systemPrompt.slice(0, 60);
+        const preview = profile.systemPrompt.length > 60 ? `${promptPreview}...` : promptPreview;
+        
+        return {
+          name: `${profile.name} - ${lastUsed}\n  ${chalk.gray(preview)}`,
+          value: profile.id,
+          short: profile.name
+        };
+      });
+
+      const { selectedProfile } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'selectedProfile',
+          message: 'Select a profile to chat with:',
+          choices,
+          pageSize: 10
+        }
+      ]);
+
+      selectedProfileName = selectedProfile;
+    }
   }
 
   try {
     const profileManager = new ProfileManager();
     const configManager = new ConfigManager();
     
-    const profile = await profileManager.getProfile(profileName);
+    const profile = await profileManager.getProfile(selectedProfileName!);
     if (!profile) {
-      console.error(chalk.red(`❌ Profile '${profileName}' not found`));
+      console.error(chalk.red(`❌ Profile '${selectedProfileName}' not found`));
       console.log(chalk.gray('List available profiles with: cgem list'));
       process.exit(1);
     }
@@ -66,7 +104,7 @@ export async function chatCommand(profileName: string): Promise<void> {
       ]
     };
 
-    await profileManager.updateLastUsed(profileName);
+    await profileManager.updateLastUsed(selectedProfileName!);
 
     console.log(chalk.blue(`\n💬 Starting conversation with ${chalk.white(profile.name)}`));
     console.log(chalk.gray(`Provider: ${currentProvider}`));

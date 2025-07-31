@@ -103,36 +103,4 @@ export class AIClient {
       this.agent = this.createAgent(newApiKey);
     }
   }
-
-  static getAvailableModels(provider: AIProvider): string[] {
-    switch (provider) {
-      case 'openai':
-        return ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'];
-      case 'anthropic':
-        return [
-          'claude-3-5-sonnet-20241022',
-          'claude-3-5-haiku-20241022',
-          'claude-3-opus-20240229',
-          'claude-3-sonnet-20240229',
-          'claude-3-haiku-20240307',
-        ];
-      case 'google':
-        return ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro'];
-      default:
-        return [];
-    }
-  }
-
-  static getDefaultModel(provider: AIProvider): string {
-    switch (provider) {
-      case 'openai':
-        return 'gpt-4o-mini';
-      case 'anthropic':
-        return 'claude-3-5-haiku-20241022';
-      case 'google':
-        return 'gemini-1.5-flash';
-      default:
-        throw new Error(`Unsupported provider: ${provider}`);
-    }
-  }
 }

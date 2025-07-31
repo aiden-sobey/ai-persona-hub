@@ -7,7 +7,7 @@ import {
   jest,
 } from '@jest/globals';
 import { AIClient } from '../../src/services/ai-client';
-import { AIConfig, ChatMessage, _AIProvider } from '../../src/types';
+import { AIConfig, ChatMessage } from '../../src/types';
 
 // Mock Mastra core
 jest.mock('@mastra/core');
@@ -283,68 +283,6 @@ describe('AIClient', () => {
 
       expect(process.env.ANTHROPIC_API_KEY).toBe('new-api-key');
       expect(MockAgent).toHaveBeenCalledTimes(2); // Initial + update call
-    });
-  });
-
-  describe('static methods', () => {
-    describe('getAvailableModels', () => {
-      test('should return OpenAI models', () => {
-        const models = AIClient.getAvailableModels('openai');
-
-        expect(models).toEqual([
-          'gpt-4o',
-          'gpt-4o-mini',
-          'gpt-4-turbo',
-          'gpt-3.5-turbo',
-        ]);
-      });
-
-      test('should return Anthropic models', () => {
-        const models = AIClient.getAvailableModels('anthropic');
-
-        expect(models).toContain('claude-3-5-sonnet-20241022');
-        expect(models).toContain('claude-3-5-haiku-20241022');
-        expect(models).toContain('claude-3-opus-20240229');
-      });
-
-      test('should return Google models', () => {
-        const models = AIClient.getAvailableModels('google');
-
-        expect(models).toEqual([
-          'gemini-1.5-flash',
-          'gemini-1.5-pro',
-          'gemini-1.0-pro',
-        ]);
-      });
-
-      test('should return empty array for unknown provider', () => {
-        const models = AIClient.getAvailableModels('unknown' as _AIProvider);
-
-        expect(models).toEqual([]);
-      });
-    });
-
-    describe('getDefaultModel', () => {
-      test('should return default OpenAI model', () => {
-        const model = AIClient.getDefaultModel('openai');
-        expect(model).toBe('gpt-4o-mini');
-      });
-
-      test('should return default Anthropic model', () => {
-        const model = AIClient.getDefaultModel('anthropic');
-        expect(model).toBe('claude-3-5-haiku-20241022');
-      });
-
-      test('should return default Google model', () => {
-        const model = AIClient.getDefaultModel('google');
-        expect(model).toBe('gemini-1.5-flash');
-      });
-
-      test('should throw error for unknown provider', () => {
-        expect(() =>
-          AIClient.getDefaultModel('unknown' as _AIProvider)
-        ).toThrow('Unsupported provider: unknown');
-      });
     });
   });
 });

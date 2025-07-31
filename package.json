@@ -1,0 +1,42 @@
+{
+  "name": "custom-gems",
+  "version": "1.0.0",
+  "description": "AI Profile CLI - Create custom AI profiles with multiple AI providers",
+  "main": "dist/index.js",
+  "bin": {
+    "cgem": "./bin/cgem"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ai",
+    "cli",
+    "mastra",
+    "profiles",
+    "typescript",
+    "openai",
+    "claude",
+    "gemini"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@ai-sdk/anthropic": "^1.2.12",
+    "@ai-sdk/google": "^1.2.22",
+    "@ai-sdk/openai": "^1.3.23",
+    "@mastra/core": "^0.12.0",
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0",
+    "inquirer": "^8.2.6"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.8",
+    "@types/node": "^24.1.0",
+    "typescript": "^5.8.3"
+  }
+}

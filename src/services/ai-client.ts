@@ -78,8 +78,8 @@ export class AIClient {
 
       return response;
     } catch (_error) {
-      if (error instanceof Error) {
-        throw new Error(`AI API error: ${error.message}`);
+      if (_error instanceof Error) {
+        throw new Error(`AI API error: ${_error.message}`);
       }
       throw new Error(
         'Unknown error occurred while communicating with AI provider'

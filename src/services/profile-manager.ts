@@ -100,14 +100,14 @@ export class ProfileManager {
           // Skip invalid/corrupted profile files
           console.warn(
             `Warning: Could not load profile from ${file}:`,
-            error instanceof Error ? error.message : 'Unknown error'
+            _error instanceof Error ? _error.message : 'Unknown error'
           );
         }
       }
     } catch (_error) {
       console.error(
         'Error scanning profiles directory:',
-        error instanceof Error ? error.message : 'Unknown error'
+        _error instanceof Error ? _error.message : 'Unknown error'
       );
     }
 

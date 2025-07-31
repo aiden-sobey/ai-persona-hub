@@ -45,6 +45,32 @@ export const unlinkSync = jest.fn((path: string) => {
   mockFileSystem.delete(path);
 });
 
+export const readdirSync = jest.fn((path: string) => {
+  if (!mockDirectories.has(path)) {
+    const error = new Error(
+      `ENOENT: no such file or directory, scandir '${path}'`
+    ) as any;
+    error.code = 'ENOENT';
+    error.errno = -2;
+    error.syscall = 'scandir';
+    error.path = path;
+    throw error;
+  }
+
+  // Return filenames for files in this directory
+  const files: string[] = [];
+  for (const filePath of mockFileSystem.keys()) {
+    if (filePath.startsWith(path + '/' + '') && filePath !== path) {
+      const relativePath = filePath.substring(path.length + 1);
+      // Only include direct children (no subdirectories)
+      if (!relativePath.includes('/')) {
+        files.push(relativePath);
+      }
+    }
+  }
+  return files;
+});
+
 // Test utilities for controlling mock file system
 export const __setMockFiles = (files: Record<string, string>) => {
   mockFileSystem.clear();
@@ -74,6 +100,7 @@ export const __resetMocks = () => {
   existsSync.mockClear();
   mkdirSync.mockClear();
   unlinkSync.mockClear();
+  readdirSync.mockClear();
   __clearMockFileSystem();
 };
 
@@ -84,6 +111,7 @@ const fs = {
   existsSync,
   mkdirSync,
   unlinkSync,
+  readdirSync,
   __setMockFiles,
   __setMockDirectories,
   __getMockFileSystem,

@@ -7,7 +7,7 @@ import {
   jest,
 } from '@jest/globals';
 import { AIClient } from '../../src/services/ai-client';
-import { AIConfig, ChatMessage } from '../../src/types';
+import { AIConfig, ChatMessage, AIProvider } from '../../src/types';
 
 // Mock Mastra core
 jest.mock('@mastra/core');
@@ -106,7 +106,7 @@ describe('AIClient', () => {
 
     test('should throw error for unsupported provider', () => {
       const config: AIConfig = {
-        provider: 'unsupported' as _AIProvider,
+        provider: 'unsupported' as AIProvider,
         model: 'some-model',
       };
 
@@ -277,7 +277,7 @@ describe('AIClient', () => {
     });
 
     test('should update configuration and recreate agent with new API key', () => {
-      const updates = { provider: 'anthropic' as _AIProvider };
+      const updates = { provider: 'anthropic' as AIProvider };
 
       client.updateConfig(updates, 'new-api-key');
 

@@ -7,8 +7,7 @@ import {
   jest,
 } from '@jest/globals';
 import { ProfileManager } from '../../src/services/profile-manager';
-import { _AIProfile } from '../../src/types';
-import { createMockProfile, _createMockProfiles } from '../setup/test-utils';
+import { createMockProfile, createMockProfiles } from '../setup/test-utils';
 
 // Mock fs module
 jest.mock('fs');
@@ -87,7 +86,6 @@ describe('ProfileManager', () => {
     test('should throw error if profile already exists', async () => {
       const profilePath = '/test/profiles/existing-profile.json';
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({ profiles: [] }),
         [profilePath]: JSON.stringify(
           createMockProfile({ id: 'existing-profile' })
         ),
@@ -110,7 +108,6 @@ describe('ProfileManager', () => {
       const profilePath = '/test/profiles/existing-profile.json';
 
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({ profiles: [] }),
         [profilePath]: JSON.stringify(mockProfile),
       });
 
@@ -129,7 +126,6 @@ describe('ProfileManager', () => {
     test('should return null if profile file is corrupted', async () => {
       const profilePath = '/test/profiles/corrupted-profile.json';
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({ profiles: [] }),
         [profilePath]: 'invalid json{',
       });
 
@@ -143,7 +139,6 @@ describe('ProfileManager', () => {
       const profilePath = '/test/profiles/test-profile.json';
 
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({ profiles: [] }),
         [profilePath]: JSON.stringify(mockProfile),
       });
 
@@ -161,15 +156,12 @@ describe('ProfileManager', () => {
     });
 
     test('should return all profiles sorted by name', async () => {
-      const profiles = _createMockProfiles(3);
+      const profiles = createMockProfiles(3);
       profiles[0].name = 'Charlie';
       profiles[1].name = 'Alice';
       profiles[2].name = 'Bob';
 
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({
-          profiles: ['profile-1', 'profile-2', 'profile-3'],
-        }),
         '/test/profiles/profile-1.json': JSON.stringify(profiles[0]),
         '/test/profiles/profile-2.json': JSON.stringify(profiles[1]),
         '/test/profiles/profile-3.json': JSON.stringify(profiles[2]),
@@ -187,9 +179,6 @@ describe('ProfileManager', () => {
       const validProfile = createMockProfile({ id: 'valid-profile' });
 
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({
-          profiles: ['valid-profile', 'invalid-profile'],
-        }),
         '/test/profiles/valid-profile.json': JSON.stringify(validProfile),
         // invalid-profile.json doesn't exist
       });
@@ -200,10 +189,9 @@ describe('ProfileManager', () => {
       expect(result[0]).toEqual(validProfile);
     });
 
-    test('should handle corrupted index file', async () => {
-      mockFs.__setMockFiles({
-        [indexPath]: 'invalid json{',
-      });
+    test('should handle empty profiles directory', async () => {
+      // No files in directory
+      mockFs.__setMockFiles({});
 
       const result = await profileManager.listProfiles();
 
@@ -217,7 +205,6 @@ describe('ProfileManager', () => {
       const profilePath = '/test/profiles/test-profile.json';
 
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({ profiles: [] }),
         [profilePath]: JSON.stringify(originalProfile),
       });
 
@@ -257,7 +244,6 @@ describe('ProfileManager', () => {
       const profilePath = '/test/profiles/test-profile.json';
 
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({ profiles: ['test-profile'] }),
         [profilePath]: JSON.stringify(createMockProfile()),
       });
 
@@ -265,10 +251,6 @@ describe('ProfileManager', () => {
 
       expect(result).toBe(true);
       expect(fs.unlinkSync).toHaveBeenCalledWith(profilePath);
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        indexPath,
-        JSON.stringify({ profiles: [] }, null, 2)
-      );
     });
 
     test('should return false if profile does not exist', async () => {
@@ -282,9 +264,6 @@ describe('ProfileManager', () => {
       const profilePath = '/test/profiles/test-profile.json';
 
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({
-          profiles: ['test-profile', 'other-profile'],
-        }),
         [profilePath]: JSON.stringify(createMockProfile()),
       });
 
@@ -298,12 +277,6 @@ describe('ProfileManager', () => {
       await expect(
         profileManager.deleteProfile('test-profile')
       ).rejects.toThrow('Permission denied');
-
-      // Index should NOT be updated if file deletion fails
-      expect(fs.writeFileSync).not.toHaveBeenCalledWith(
-        indexPath,
-        JSON.stringify({ profiles: ['other-profile'] }, null, 2)
-      );
     });
   });
 
@@ -313,7 +286,6 @@ describe('ProfileManager', () => {
       const profilePath = '/test/profiles/test-profile.json';
 
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({ profiles: [] }),
         [profilePath]: JSON.stringify(originalProfile),
       });
 

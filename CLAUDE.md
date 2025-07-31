@@ -28,7 +28,11 @@ npm run lint:fix       # Run ESLint and Prettier with auto-fix
 npm run lint:check     # Check for linting/formatting violations without fixing
 ```
 
-**IMPORTANT**: Both `npm run lint:check` and `npm run build` must pass (exit code 0) before any task is considered completed by Claude. Always run these commands after making code changes to ensure code quality standards are met.
+**IMPORTANT**: The following commands must all pass (exit code 0) before any task is considered completed by Claude:
+- `npm run lint:check`
+- `npm run test`
+- `npm run build`
+Always run these commands after making code changes to ensure code quality standards are met.
 
 ### CLI Usage (after build)
 

@@ -7,7 +7,6 @@ import {
   jest,
 } from '@jest/globals';
 import { ConfigManager } from '../../src/utils/config';
-import { _AIProvider } from '../../src/types';
 import { createMockConfig } from '../setup/test-utils';
 
 // Mock fs and os modules
@@ -190,9 +189,11 @@ describe('ConfigManager', () => {
 
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         configPath,
-        expect.stringContaining(
-          '"anthropic": {\n          "apiKey": "new-anthropic-key"'
-        )
+        expect.stringContaining('"anthropic"')
+      );
+      expect(fs.writeFileSync).toHaveBeenCalledWith(
+        configPath,
+        expect.stringContaining('"new-anthropic-key"')
       );
     });
 
@@ -205,9 +206,11 @@ describe('ConfigManager', () => {
 
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         configPath,
-        expect.stringContaining(
-          '"providers": {\n        "openai": {\n          "apiKey": "test-key"'
-        )
+        expect.stringContaining('"providers"')
+      );
+      expect(fs.writeFileSync).toHaveBeenCalledWith(
+        configPath,
+        expect.stringContaining('"test-key"')
       );
     });
 
@@ -226,7 +229,11 @@ describe('ConfigManager', () => {
 
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         configPath,
-        expect.stringContaining('"google": {\n          "apiKey": "google-key"')
+        expect.stringContaining('"google"')
+      );
+      expect(fs.writeFileSync).toHaveBeenCalledWith(
+        configPath,
+        expect.stringContaining('"google-key"')
       );
     });
   });

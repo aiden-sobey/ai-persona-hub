@@ -49,17 +49,26 @@ export async function modelCommand(): Promise<void> {
   ]);
 
   // Get model based on selected provider
+  const selectedProvider = provider.value as AIProvider;
+  const availableModels = PROVIDER_MODELS[selectedProvider];
+
+  if (!availableModels || availableModels.length === 0) {
+    console.error(
+      chalk.red(`No models available for provider: ${selectedProvider}`)
+    );
+    process.exit(1);
+  }
+
   const model = await inquirer.prompt([
     {
       type: 'list',
       name: 'value',
       message: 'Select model:',
-      choices: PROVIDER_MODELS[provider.value as AIProvider],
+      choices: availableModels,
       default:
-        currentModel &&
-        PROVIDER_MODELS[provider.value as AIProvider].includes(currentModel)
+        currentModel && availableModels.includes(currentModel)
           ? currentModel
-          : PROVIDER_MODELS[provider.value as AIProvider][0],
+          : availableModels[0],
     },
   ]);
 

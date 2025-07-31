@@ -8,7 +8,7 @@ import {
 } from '@jest/globals';
 import { listCommand } from '../../src/commands/list';
 import { ProfileManager } from '../../src/services/profile-manager';
-import { createMockProfile, _createMockProfiles } from '../setup/test-utils';
+import { createMockProfile } from '../setup/test-utils';
 
 // Mock ProfileManager
 jest.mock('../../src/services/profile-manager');
@@ -40,12 +40,12 @@ describe('listCommand', () => {
     consoleErrors = [];
     processExitCode = undefined;
 
-    console.log = jest.fn((message: string) => {
-      consoleLogs.push(message);
+    console.log = jest.fn((...args: any[]) => {
+      consoleLogs.push(args.join(' '));
     });
 
-    console.error = jest.fn((message: string) => {
-      consoleErrors.push(message);
+    console.error = jest.fn((...args: any[]) => {
+      consoleErrors.push(args.join(' '));
     });
 
     process.exit = jest.fn((code?: number) => {

@@ -21,7 +21,11 @@ export async function deleteCommand(profileName: string): Promise<void> {
     console.log(chalk.yellow(`\n⚠️  You are about to delete the profile:`));
     console.log(chalk.white(`   Name: ${profile.name}`));
     console.log(chalk.gray(`   ID: ${profile.id}`));
-    console.log(chalk.gray(`   Created: ${new Date(profile.createdAt).toLocaleDateString()}`));
+    console.log(
+      chalk.gray(
+        `   Created: ${new Date(profile.createdAt).toLocaleDateString()}`
+      )
+    );
     if (profile.maxTokens) {
       console.log(chalk.gray(`   Max tokens: ${profile.maxTokens}`));
     }
@@ -31,8 +35,8 @@ export async function deleteCommand(profileName: string): Promise<void> {
         type: 'confirm',
         name: 'confirmed',
         message: 'Are you sure you want to delete this profile?',
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     if (!confirmed) {
@@ -43,14 +47,18 @@ export async function deleteCommand(profileName: string): Promise<void> {
     const deleted = await profileManager.deleteProfile(profileName);
 
     if (deleted) {
-      console.log(chalk.green(`\n✅ Profile '${profile.name}' deleted successfully`));
+      console.log(
+        chalk.green(`\n✅ Profile '${profile.name}' deleted successfully`)
+      );
     } else {
       console.error(chalk.red('❌ Failed to delete profile'));
       process.exit(1);
     }
   } catch (error) {
     console.error(chalk.red('❌ Error deleting profile:'));
-    console.error(chalk.red(error instanceof Error ? error.message : 'Unknown error'));
+    console.error(
+      chalk.red(error instanceof Error ? error.message : 'Unknown error')
+    );
     process.exit(1);
   }
 }

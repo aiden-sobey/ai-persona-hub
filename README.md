@@ -16,16 +16,19 @@ A command-line interface for creating and managing custom AI profiles powered by
 ## Installation
 
 1. Clone the repository and install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Build the project:
+
 ```bash
 npm run build
 ```
 
 3. Set up API keys for your preferred providers:
+
 ```bash
 # OpenAI
 export OPENAI_API_KEY="your-openai-key"
@@ -40,34 +43,43 @@ export GOOGLE_GENERATIVE_AI_API_KEY="your-google-key"
 ## Usage
 
 ### Configure AI model (required first step)
+
 ```bash
 ./bin/cgem model
 ```
-*Select your preferred AI provider and model*
+
+_Select your preferred AI provider and model_
 
 ### Create a new profile
+
 ```bash
 ./bin/cgem create
 ```
-*Create a custom AI profile with system prompt (works with any model)*
+
+_Create a custom AI profile with system prompt (works with any model)_
 
 ### List all profiles
+
 ```bash
 ./bin/cgem list
 ```
 
 ### Start a chat with a profile
+
 ```bash
 ./bin/cgem chat <profile-name>
 ```
-*Chat with any profile using your currently configured model*
+
+_Chat with any profile using your currently configured model_
 
 ### List available models
+
 ```bash
 ./bin/cgem model list
 ```
 
 ### Delete a profile
+
 ```bash
 ./bin/cgem delete <profile-name>
 ```
@@ -75,12 +87,14 @@ export GOOGLE_GENERATIVE_AI_API_KEY="your-google-key"
 ## Supported AI Providers & Models
 
 ### OpenAI
+
 - gpt-4o
 - gpt-4o-mini
 - gpt-4-turbo
 - gpt-3.5-turbo
 
 ### Anthropic (Claude)
+
 - claude-3-5-sonnet-20241022
 - claude-3-5-haiku-20241022
 - claude-3-opus-20240229
@@ -88,6 +102,7 @@ export GOOGLE_GENERATIVE_AI_API_KEY="your-google-key"
 - claude-3-haiku-20240307
 
 ### Google (Gemini)
+
 - gemini-1.5-flash
 - gemini-1.5-pro
 - gemini-1.0-pro
@@ -95,14 +110,17 @@ export GOOGLE_GENERATIVE_AI_API_KEY="your-google-key"
 ## Configuration
 
 ### API Keys
+
 Set API keys via environment variables or in `~/.cgem/config.json`:
 
 **Environment Variables:**
+
 - `OPENAI_API_KEY` - OpenAI API key
-- `ANTHROPIC_API_KEY` - Anthropic API key  
+- `ANTHROPIC_API_KEY` - Anthropic API key
 - `GOOGLE_GENERATIVE_AI_API_KEY` - Google AI API key
 
 **Config File Example** (`~/.cgem/config.json`):
+
 ```json
 {
   "providers": {
@@ -123,6 +141,7 @@ Set API keys via environment variables or in `~/.cgem/config.json`:
 ```
 
 ### Profile Storage
+
 Profiles are stored in `./profiles/` directory
 
 ## Development
@@ -156,6 +175,7 @@ Profiles are stored as JSON files with the following structure:
 ## Architecture
 
 Built with:
+
 - **Mastra AI Framework** - Unified AI provider interface
 - **TypeScript** - Type-safe development
 - **Commander.js** - CLI framework

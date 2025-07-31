@@ -18,7 +18,7 @@ class MockAgentClass {
     this.model = config.model;
   }
 
-  async generate(prompt: string, options?: any): Promise<{ text: string }> {
+  async generate(_prompt: string, _options?: any): Promise<{ text: string }> {
     if (shouldThrowError) {
       throw mockError;
     }
@@ -27,7 +27,8 @@ class MockAgentClass {
     await new Promise(resolve => setTimeout(resolve, 10));
 
     // Return the next mock response
-    const response = mockResponses[currentResponseIndex] || 'Default mock response';
+    const response =
+      mockResponses[currentResponseIndex] || 'Default mock response';
     currentResponseIndex = (currentResponseIndex + 1) % mockResponses.length;
 
     return {
@@ -63,8 +64,10 @@ export const __resetMockAgent = () => {
 };
 
 // Mock the Agent constructor
-const MockAgent = jest.fn().mockImplementation((config: any) => new MockAgentClass(config));
+const MockAgent = jest
+  .fn()
+  .mockImplementation((config: any) => new MockAgentClass(config));
 
-// Export the mock  
+// Export the mock
 export { MockAgent as Agent };
 export default { Agent: MockAgent };

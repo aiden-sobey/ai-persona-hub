@@ -3,10 +3,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
-  testMatch: [
-    '<rootDir>/tests/**/*.test.ts',
-    '<rootDir>/tests/**/*.spec.ts'
-  ],
+  testMatch: ['<rootDir>/tests/**/*.test.ts', '<rootDir>/tests/**/*.spec.ts'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
@@ -17,11 +14,7 @@ module.exports = {
     '!**/*.d.ts',
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: [
-    'text',
-    'lcov',
-    'html'
-  ],
+  coverageReporters: ['text', 'lcov', 'html'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup/test-setup.ts'],
   clearMocks: true,
   restoreMocks: true,
@@ -30,9 +23,7 @@ module.exports = {
   maxWorkers: '50%',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^chalk$': '<rootDir>/tests/__mocks__/chalk.ts'
+    '^chalk$': '<rootDir>/tests/__mocks__/chalk.ts',
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!(chalk)/)'
-  ]
+  transformIgnorePatterns: ['node_modules/(?!(chalk)/)'],
 };

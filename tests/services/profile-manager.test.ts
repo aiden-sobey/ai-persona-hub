@@ -1,7 +1,14 @@
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import {
+  describe,
+  test,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
 import { ProfileManager } from '../../src/services/profile-manager';
-import { AIProfile } from '../../src/types';
-import { createMockProfile, createMockProfiles } from '../setup/test-utils';
+import { _AIProfile } from '../../src/types';
+import { createMockProfile, _createMockProfiles } from '../setup/test-utils';
 
 // Mock fs module
 jest.mock('fs');
@@ -15,11 +22,11 @@ describe('ProfileManager', () => {
   beforeEach(() => {
     // Reset mocks
     mockFs.__resetMocks();
-    
+
     // Set up default file system state
     mockFs.__setMockDirectories([testProfilesDir]);
     mockFs.__setMockFiles({});
-    
+
     profileManager = new ProfileManager(testProfilesDir);
   });
 
@@ -30,12 +37,13 @@ describe('ProfileManager', () => {
   describe('constructor', () => {
     test('should create profiles directory if it does not exist', () => {
       mockFs.__clearMockFileSystem();
-      
-      new ProfileManager(testProfilesDir);
-      
-      expect(fs.mkdirSync).toHaveBeenCalledWith(testProfilesDir, { recursive: true });
-    });
 
+      new ProfileManager(testProfilesDir);
+
+      expect(fs.mkdirSync).toHaveBeenCalledWith(testProfilesDir, {
+        recursive: true,
+      });
+    });
   });
 
   describe('createProfile', () => {
@@ -80,7 +88,9 @@ describe('ProfileManager', () => {
       const profilePath = '/test/profiles/existing-profile.json';
       mockFs.__setMockFiles({
         [indexPath]: JSON.stringify({ profiles: [] }),
-        [profilePath]: JSON.stringify(createMockProfile({ id: 'existing-profile' })),
+        [profilePath]: JSON.stringify(
+          createMockProfile({ id: 'existing-profile' })
+        ),
       });
 
       const profileData = {
@@ -98,7 +108,7 @@ describe('ProfileManager', () => {
     test('should return profile if it exists', async () => {
       const mockProfile = createMockProfile({ id: 'existing-profile' });
       const profilePath = '/test/profiles/existing-profile.json';
-      
+
       mockFs.__setMockFiles({
         [indexPath]: JSON.stringify({ profiles: [] }),
         [profilePath]: JSON.stringify(mockProfile),
@@ -131,7 +141,7 @@ describe('ProfileManager', () => {
     test('should sanitize profile name for lookup', async () => {
       const mockProfile = createMockProfile({ id: 'test-profile' });
       const profilePath = '/test/profiles/test-profile.json';
-      
+
       mockFs.__setMockFiles({
         [indexPath]: JSON.stringify({ profiles: [] }),
         [profilePath]: JSON.stringify(mockProfile),
@@ -151,13 +161,15 @@ describe('ProfileManager', () => {
     });
 
     test('should return all profiles sorted by name', async () => {
-      const profiles = createMockProfiles(3);
+      const profiles = _createMockProfiles(3);
       profiles[0].name = 'Charlie';
       profiles[1].name = 'Alice';
       profiles[2].name = 'Bob';
 
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({ profiles: ['profile-1', 'profile-2', 'profile-3'] }),
+        [indexPath]: JSON.stringify({
+          profiles: ['profile-1', 'profile-2', 'profile-3'],
+        }),
         '/test/profiles/profile-1.json': JSON.stringify(profiles[0]),
         '/test/profiles/profile-2.json': JSON.stringify(profiles[1]),
         '/test/profiles/profile-3.json': JSON.stringify(profiles[2]),
@@ -175,7 +187,9 @@ describe('ProfileManager', () => {
       const validProfile = createMockProfile({ id: 'valid-profile' });
 
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({ profiles: ['valid-profile', 'invalid-profile'] }),
+        [indexPath]: JSON.stringify({
+          profiles: ['valid-profile', 'invalid-profile'],
+        }),
         '/test/profiles/valid-profile.json': JSON.stringify(validProfile),
         // invalid-profile.json doesn't exist
       });
@@ -201,7 +215,7 @@ describe('ProfileManager', () => {
     test('should update existing profile', async () => {
       const originalProfile = createMockProfile({ id: 'test-profile' });
       const profilePath = '/test/profiles/test-profile.json';
-      
+
       mockFs.__setMockFiles({
         [indexPath]: JSON.stringify({ profiles: [] }),
         [profilePath]: JSON.stringify(originalProfile),
@@ -212,7 +226,10 @@ describe('ProfileManager', () => {
         maxTokens: 2000,
       };
 
-      const result = await profileManager.updateProfile('test-profile', updates);
+      const result = await profileManager.updateProfile(
+        'test-profile',
+        updates
+      );
 
       expect(result).toMatchObject({
         ...originalProfile,
@@ -238,7 +255,7 @@ describe('ProfileManager', () => {
   describe('deleteProfile', () => {
     test('should delete existing profile', async () => {
       const profilePath = '/test/profiles/test-profile.json';
-      
+
       mockFs.__setMockFiles({
         [indexPath]: JSON.stringify({ profiles: ['test-profile'] }),
         [profilePath]: JSON.stringify(createMockProfile()),
@@ -263,18 +280,24 @@ describe('ProfileManager', () => {
 
     test('should throw error if file deletion fails', async () => {
       const profilePath = '/test/profiles/test-profile.json';
-      
+
       mockFs.__setMockFiles({
-        [indexPath]: JSON.stringify({ profiles: ['test-profile', 'other-profile'] }),
+        [indexPath]: JSON.stringify({
+          profiles: ['test-profile', 'other-profile'],
+        }),
         [profilePath]: JSON.stringify(createMockProfile()),
       });
 
       // Mock unlinkSync to throw an error
-      (fs.unlinkSync as jest.MockedFunction<typeof fs.unlinkSync>).mockImplementationOnce(() => {
+      (
+        fs.unlinkSync as jest.MockedFunction<typeof fs.unlinkSync>
+      ).mockImplementationOnce(() => {
         throw new Error('Permission denied');
       });
 
-      await expect(profileManager.deleteProfile('test-profile')).rejects.toThrow('Permission denied');
+      await expect(
+        profileManager.deleteProfile('test-profile')
+      ).rejects.toThrow('Permission denied');
 
       // Index should NOT be updated if file deletion fails
       expect(fs.writeFileSync).not.toHaveBeenCalledWith(
@@ -288,7 +311,7 @@ describe('ProfileManager', () => {
     test('should update lastUsed timestamp', async () => {
       const originalProfile = createMockProfile({ id: 'test-profile' });
       const profilePath = '/test/profiles/test-profile.json';
-      
+
       mockFs.__setMockFiles({
         [indexPath]: JSON.stringify({ profiles: [] }),
         [profilePath]: JSON.stringify(originalProfile),
@@ -305,15 +328,19 @@ describe('ProfileManager', () => {
       );
 
       // Get the written data and parse it to check the timestamp
-      const writeCall = (fs.writeFileSync as jest.MockedFunction<typeof fs.writeFileSync>).mock.calls.find(
-        call => call[0] === profilePath
-      );
+      const writeCall = (
+        fs.writeFileSync as jest.MockedFunction<typeof fs.writeFileSync>
+      ).mock.calls.find(call => call[0] === profilePath);
       expect(writeCall).toBeDefined();
-      
+
       const writtenData = JSON.parse(writeCall![1] as string);
       expect(writtenData.lastUsed).toBeDefined();
-      expect(new Date(writtenData.lastUsed).getTime()).toBeGreaterThanOrEqual(new Date(beforeUpdate).getTime());
-      expect(new Date(writtenData.lastUsed).getTime()).toBeLessThanOrEqual(new Date(afterUpdate).getTime());
+      expect(new Date(writtenData.lastUsed).getTime()).toBeGreaterThanOrEqual(
+        new Date(beforeUpdate).getTime()
+      );
+      expect(new Date(writtenData.lastUsed).getTime()).toBeLessThanOrEqual(
+        new Date(afterUpdate).getTime()
+      );
     });
   });
 });

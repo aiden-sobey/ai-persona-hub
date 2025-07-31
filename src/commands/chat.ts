@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { ProfileManager } from '../services/profile-manager';
 import { ConfigManager } from '../utils/config';
 import { AIClient } from '../services/ai-client';
-import { ChatMessage, ConversationState } from '../types';
+import { ConversationState } from '../types';
 
 export async function chatCommand(profileName?: string): Promise<void> {
   let selectedProfileName = profileName;
@@ -23,16 +23,19 @@ export async function chatCommand(profileName?: string): Promise<void> {
       console.log(chalk.blue(`Using profile: ${profiles[0].name}`));
     } else {
       const choices = profiles.map(profile => {
-        const lastUsed = profile.lastUsed 
+        const lastUsed = profile.lastUsed
           ? `Last used: ${new Date(profile.lastUsed).toLocaleDateString()}`
           : 'Never used';
         const promptPreview = profile.systemPrompt.slice(0, 60);
-        const preview = profile.systemPrompt.length > 60 ? `${promptPreview}...` : promptPreview;
-        
+        const preview =
+          profile.systemPrompt.length > 60
+            ? `${promptPreview}...`
+            : promptPreview;
+
         return {
           name: `${profile.name} - ${lastUsed}\n  ${chalk.gray(preview)}`,
           value: profile.id,
-          short: profile.name
+          short: profile.name,
         };
       });
 
@@ -42,8 +45,8 @@ export async function chatCommand(profileName?: string): Promise<void> {
           name: 'selectedProfile',
           message: 'Select a profile to chat with:',
           choices,
-          pageSize: 10
-        }
+          pageSize: 10,
+        },
       ]);
 
       selectedProfileName = selectedProfile;
@@ -53,7 +56,7 @@ export async function chatCommand(profileName?: string): Promise<void> {
   try {
     const profileManager = new ProfileManager();
     const configManager = new ConfigManager();
-    
+
     const profile = await profileManager.getProfile(selectedProfileName!);
     if (!profile) {
       console.error(chalk.red(`❌ Profile '${selectedProfileName}' not found`));
@@ -73,7 +76,11 @@ export async function chatCommand(profileName?: string): Promise<void> {
     const apiKey = configManager.getProviderApiKey(currentProvider);
     if (!apiKey) {
       console.error(chalk.red(`❌ ${currentProvider} API key not found`));
-      console.log(chalk.gray(`Set your API key with environment variable or in ~/.cgem/config.json:`));
+      console.log(
+        chalk.gray(
+          `Set your API key with environment variable or in ~/.cgem/config.json:`
+        )
+      );
       switch (currentProvider) {
         case 'openai':
           console.log(chalk.gray('Environment: OPENAI_API_KEY'));
@@ -88,25 +95,30 @@ export async function chatCommand(profileName?: string): Promise<void> {
       process.exit(1);
     }
 
-    const aiClient = new AIClient({
-      provider: currentProvider,
-      model: currentModel,
-      maxTokens: profile.maxTokens
-    }, apiKey);
+    const aiClient = new AIClient(
+      {
+        provider: currentProvider,
+        model: currentModel,
+        maxTokens: profile.maxTokens,
+      },
+      apiKey
+    );
 
     const conversationState: ConversationState = {
       profileId: profile.id,
       messages: [
         {
           role: 'system',
-          content: profile.systemPrompt
-        }
-      ]
+          content: profile.systemPrompt,
+        },
+      ],
     };
 
     await profileManager.updateLastUsed(selectedProfileName!);
 
-    console.log(chalk.blue(`\n💬 Starting conversation with ${chalk.white(profile.name)}`));
+    console.log(
+      chalk.blue(`\n💬 Starting conversation with ${chalk.white(profile.name)}`)
+    );
     console.log(chalk.gray(`Provider: ${currentProvider}`));
     console.log(chalk.gray(`Model: ${currentModel}`));
     console.log(chalk.gray('Type "exit" or "quit" to end the conversation\n'));
@@ -122,23 +134,26 @@ export async function chatCommand(profileName?: string): Promise<void> {
               return 'Please enter a message';
             }
             return true;
-          }
-        }
+          },
+        },
       ]);
 
-      if (userMessage.toLowerCase() === 'exit' || userMessage.toLowerCase() === 'quit') {
+      if (
+        userMessage.toLowerCase() === 'exit' ||
+        userMessage.toLowerCase() === 'quit'
+      ) {
         console.log(chalk.gray('\nGoodbye! 👋'));
         break;
       }
 
       conversationState.messages.push({
         role: 'user',
-        content: userMessage
+        content: userMessage,
       });
 
       try {
         console.log(chalk.blue('AI:'), chalk.gray('thinking...'));
-        
+
         const response = await aiClient.sendMessage(
           conversationState.messages,
           (chunk: string) => {
@@ -153,19 +168,27 @@ export async function chatCommand(profileName?: string): Promise<void> {
 
         conversationState.messages.push({
           role: 'assistant',
-          content: response
+          content: response,
         });
 
         console.log('\n');
       } catch (error) {
         console.error(chalk.red('\n❌ Error getting AI response:'));
-        console.error(chalk.red(error instanceof Error ? error.message : 'Unknown error'));
-        console.log(chalk.gray('You can continue the conversation or type "exit" to quit.\n'));
+        console.error(
+          chalk.red(error instanceof Error ? error.message : 'Unknown error')
+        );
+        console.log(
+          chalk.gray(
+            'You can continue the conversation or type "exit" to quit.\n'
+          )
+        );
       }
     }
   } catch (error) {
     console.error(chalk.red('❌ Error starting chat:'));
-    console.error(chalk.red(error instanceof Error ? error.message : 'Unknown error'));
+    console.error(
+      chalk.red(error instanceof Error ? error.message : 'Unknown error')
+    );
     process.exit(1);
   }
 }

@@ -17,18 +17,30 @@ export async function listCommand(): Promise<void> {
     profiles.forEach(profile => {
       console.log(chalk.white(`• ${profile.name}`));
       console.log(chalk.gray(`  ID: ${profile.id}`));
-      console.log(chalk.gray(`  Created: ${new Date(profile.createdAt).toLocaleDateString()}`));
-      
+      console.log(
+        chalk.gray(
+          `  Created: ${new Date(profile.createdAt).toLocaleDateString()}`
+        )
+      );
+
       if (profile.lastUsed) {
-        console.log(chalk.gray(`  Last used: ${new Date(profile.lastUsed).toLocaleDateString()}`));
+        console.log(
+          chalk.gray(
+            `  Last used: ${new Date(profile.lastUsed).toLocaleDateString()}`
+          )
+        );
       }
-      
+
       if (profile.maxTokens) {
         console.log(chalk.gray(`  Max tokens: ${profile.maxTokens}`));
       }
-      
+
       const promptPreview = profile.systemPrompt.slice(0, 100);
-      console.log(chalk.gray(`  Prompt: ${promptPreview}${profile.systemPrompt.length > 100 ? '...' : ''}`));
+      console.log(
+        chalk.gray(
+          `  Prompt: ${promptPreview}${profile.systemPrompt.length > 100 ? '...' : ''}`
+        )
+      );
       console.log();
     });
 
@@ -36,7 +48,9 @@ export async function listCommand(): Promise<void> {
     console.log(chalk.white('cgem chat <profile-name>'));
   } catch (error) {
     console.error(chalk.red('❌ Error listing profiles:'));
-    console.error(chalk.red(error instanceof Error ? error.message : 'Unknown error'));
+    console.error(
+      chalk.red(error instanceof Error ? error.message : 'Unknown error')
+    );
     process.exit(1);
   }
 }

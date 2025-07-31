@@ -7,7 +7,7 @@ let promptCallCount = 0;
 // Mock the main prompt function
 const prompt = jest.fn().mockImplementation((questions: any) => {
   promptCallCount++;
-  
+
   if (Array.isArray(questions)) {
     // Multiple questions
     const result: Record<string, any> = {};
@@ -25,7 +25,10 @@ const prompt = jest.fn().mockImplementation((questions: any) => {
             result[key] = true;
             break;
           case 'list':
-            result[key] = question.choices?.[0]?.value || question.choices?.[0] || question.default;
+            result[key] =
+              question.choices?.[0]?.value ||
+              question.choices?.[0] ||
+              question.default;
             break;
           case 'number':
             result[key] = question.default || 100;
@@ -42,7 +45,7 @@ const prompt = jest.fn().mockImplementation((questions: any) => {
     if (mockResponses[key] !== undefined) {
       return Promise.resolve({ [key]: mockResponses[key] });
     }
-    
+
     // Provide default based on question type
     let defaultValue: any;
     switch (questions.type) {
@@ -53,7 +56,10 @@ const prompt = jest.fn().mockImplementation((questions: any) => {
         defaultValue = true;
         break;
       case 'list':
-        defaultValue = questions.choices?.[0]?.value || questions.choices?.[0] || questions.default;
+        defaultValue =
+          questions.choices?.[0]?.value ||
+          questions.choices?.[0] ||
+          questions.default;
         break;
       case 'number':
         defaultValue = questions.default || 100;
@@ -61,7 +67,7 @@ const prompt = jest.fn().mockImplementation((questions: any) => {
       default:
         defaultValue = questions.default || 'test-value';
     }
-    
+
     return Promise.resolve({ [key]: defaultValue });
   }
 });
@@ -74,7 +80,13 @@ const input = jest.fn().mockImplementation((options: any) => {
 
 const confirm = jest.fn().mockImplementation((options: any) => {
   const key = options.name || 'value';
-  return Promise.resolve(mockResponses[key] !== undefined ? mockResponses[key] : (options.default !== undefined ? options.default : true));
+  return Promise.resolve(
+    mockResponses[key] !== undefined
+      ? mockResponses[key]
+      : options.default !== undefined
+        ? options.default
+        : true
+  );
 });
 
 const select = jest.fn().mockImplementation((options: any) => {
@@ -82,19 +94,26 @@ const select = jest.fn().mockImplementation((options: any) => {
   if (mockResponses[key] !== undefined) {
     return Promise.resolve(mockResponses[key]);
   }
-  
-  const defaultValue = options.choices?.[0]?.value || options.choices?.[0] || options.default;
+
+  const defaultValue =
+    options.choices?.[0]?.value || options.choices?.[0] || options.default;
   return Promise.resolve(defaultValue);
 });
 
 const number = jest.fn().mockImplementation((options: any) => {
   const key = options.name || 'value';
-  return Promise.resolve(mockResponses[key] !== undefined ? mockResponses[key] : (options.default || 100));
+  return Promise.resolve(
+    mockResponses[key] !== undefined
+      ? mockResponses[key]
+      : options.default || 100
+  );
 });
 
 const editor = jest.fn().mockImplementation((options: any) => {
   const key = options.name || 'value';
-  return Promise.resolve(mockResponses[key] || options.default || 'test-editor-content');
+  return Promise.resolve(
+    mockResponses[key] || options.default || 'test-editor-content'
+  );
 });
 
 // Test utilities

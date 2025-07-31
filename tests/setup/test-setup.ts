@@ -12,10 +12,10 @@ beforeEach(() => {
     warn: jest.fn(),
     info: jest.fn(),
   } as any;
-  
+
   // Clear all mocks
   jest.clearAllMocks();
-  
+
   // Reset environment variables
   delete process.env.OPENAI_API_KEY;
   delete process.env.ANTHROPIC_API_KEY;
@@ -25,19 +25,19 @@ beforeEach(() => {
 afterEach(() => {
   // Restore original console
   global.console = originalConsole;
-  
+
   // Clear all timers
   jest.clearAllTimers();
-  
+
   // Reset modules
   jest.resetModules();
-  
+
   // Clear all mocks
   jest.clearAllMocks();
-  
+
   // Restore all mocks
   jest.restoreAllMocks();
-  
+
   // Force garbage collection if available
   if (global.gc) {
     global.gc();
@@ -55,7 +55,10 @@ declare global {
 
 // Custom matchers
 expect.extend({
-  toHaveBeenCalledWithError(received: jest.MockedFunction<any>, expectedError: string | RegExp) {
+  toHaveBeenCalledWithError(
+    received: jest.MockedFunction<any>,
+    expectedError: string | RegExp
+  ) {
     const calls = received.mock.calls;
     const hasErrorCall = calls.some((call: any[]) => {
       const message = call[0];
@@ -66,7 +69,8 @@ expect.extend({
     });
 
     return {
-      message: () => `Expected function to have been called with error containing "${expectedError}"`,
+      message: () =>
+        `Expected function to have been called with error containing "${expectedError}"`,
       pass: hasErrorCall,
     };
   },

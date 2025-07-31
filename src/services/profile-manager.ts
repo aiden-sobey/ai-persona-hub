@@ -16,7 +16,6 @@ export class ProfileManager {
     }
   }
 
-
   private getProfilePath(profileName: string): string {
     return path.join(this.profilesDir, `${profileName}.json`);
   }
@@ -38,16 +37,18 @@ export class ProfileManager {
     );
   }
 
-  async createProfile(profile: Omit<AIProfile, 'id' | 'createdAt'>): Promise<AIProfile> {
+  async createProfile(
+    profile: Omit<AIProfile, 'id' | 'createdAt'>
+  ): Promise<AIProfile> {
     const sanitizedName = this.sanitizeProfileName(profile.name);
     const newProfile: AIProfile = {
       ...profile,
       id: sanitizedName,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     const profilePath = this.getProfilePath(sanitizedName);
-    
+
     if (fs.existsSync(profilePath)) {
       throw new Error(`Profile '${profile.name}' already exists`);
     }
@@ -68,7 +69,7 @@ export class ProfileManager {
     try {
       const data = fs.readFileSync(profilePath, 'utf-8');
       return JSON.parse(data);
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -82,8 +83,8 @@ export class ProfileManager {
       }
 
       const files = fs.readdirSync(this.profilesDir);
-      const jsonFiles = files.filter(file => 
-        file.endsWith('.json') && file !== 'index.json'
+      const jsonFiles = files.filter(
+        file => file.endsWith('.json') && file !== 'index.json'
       );
 
       for (const file of jsonFiles) {
@@ -91,23 +92,32 @@ export class ProfileManager {
           const filePath = path.join(this.profilesDir, file);
           const data = fs.readFileSync(filePath, 'utf-8');
           const profileData = JSON.parse(data);
-          
+
           if (this.validateProfile(profileData)) {
             profiles.push(profileData);
           }
-        } catch (error) {
+        } catch (_error) {
           // Skip invalid/corrupted profile files
-          console.warn(`Warning: Could not load profile from ${file}:`, error instanceof Error ? error.message : 'Unknown error');
+          console.warn(
+            `Warning: Could not load profile from ${file}:`,
+            error instanceof Error ? error.message : 'Unknown error'
+          );
         }
       }
-    } catch (error) {
-      console.error('Error scanning profiles directory:', error instanceof Error ? error.message : 'Unknown error');
+    } catch (_error) {
+      console.error(
+        'Error scanning profiles directory:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
     }
 
     return profiles.sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  async updateProfile(profileName: string, updates: Partial<AIProfile>): Promise<AIProfile | null> {
+  async updateProfile(
+    profileName: string,
+    updates: Partial<AIProfile>
+  ): Promise<AIProfile | null> {
     const profile = await this.getProfile(profileName);
     if (!profile) {
       return null;
@@ -115,7 +125,7 @@ export class ProfileManager {
 
     const updatedProfile = { ...profile, ...updates };
     const profilePath = this.getProfilePath(profile.id);
-    
+
     fs.writeFileSync(profilePath, JSON.stringify(updatedProfile, null, 2));
     return updatedProfile;
   }
@@ -134,6 +144,8 @@ export class ProfileManager {
   }
 
   async updateLastUsed(profileName: string): Promise<void> {
-    await this.updateProfile(profileName, { lastUsed: new Date().toISOString() });
+    await this.updateProfile(profileName, {
+      lastUsed: new Date().toISOString(),
+    });
   }
 }

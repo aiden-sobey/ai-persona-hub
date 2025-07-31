@@ -1,4 +1,11 @@
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import {
+  describe,
+  test,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
 import { chatCommand } from '../../src/commands/chat';
 import { ProfileManager } from '../../src/services/profile-manager';
 import { ConfigManager } from '../../src/utils/config';
@@ -43,7 +50,7 @@ describe('chatCommand', () => {
     MockProfileManager.mockClear();
     MockConfigManager.mockClear();
     MockAIClient.mockClear();
-    
+
     // Create mock instances
     mockProfileManager = {
       getProfile: jest.fn(),
@@ -51,38 +58,38 @@ describe('chatCommand', () => {
       listProfiles: jest.fn(),
     };
     MockProfileManager.mockImplementation(() => mockProfileManager);
-    
+
     mockConfigManager = {
       getCurrentProvider: jest.fn(),
       getCurrentModel: jest.fn(),
       getProviderApiKey: jest.fn(),
     };
     MockConfigManager.mockImplementation(() => mockConfigManager);
-    
+
     mockAIClient = {
       sendMessage: jest.fn(),
     };
     MockAIClient.mockImplementation(() => mockAIClient);
-    
+
     // Mock console methods
     consoleLogs = [];
     consoleErrors = [];
     stdoutOutput = [];
     processExitCode = undefined;
-    
+
     console.log = jest.fn((message: string) => {
       consoleLogs.push(message);
     });
-    
+
     console.error = jest.fn((message: string) => {
       consoleErrors.push(message);
     });
-    
+
     process.exit = jest.fn((code?: number) => {
       processExitCode = code;
       return undefined as never;
     });
-    
+
     process.stdout.write = jest.fn((chunk: string) => {
       stdoutOutput.push(chunk);
       return true;
@@ -100,8 +107,16 @@ describe('chatCommand', () => {
   describe('interactive profile selection', () => {
     test('should display available profiles when no profile name provided', async () => {
       const mockProfiles = [
-        createMockProfile({ id: 'profile1', name: 'Profile 1', systemPrompt: 'Test prompt 1' }),
-        createMockProfile({ id: 'profile2', name: 'Profile 2', systemPrompt: 'Test prompt 2' })
+        createMockProfile({
+          id: 'profile1',
+          name: 'Profile 1',
+          systemPrompt: 'Test prompt 1',
+        }),
+        createMockProfile({
+          id: 'profile2',
+          name: 'Profile 2',
+          systemPrompt: 'Test prompt 2',
+        }),
       ];
       mockProfileManager.listProfiles.mockResolvedValue(mockProfiles);
       mockInquirer.__setMockResponses({ selectedProfile: 'profile1' });
@@ -110,23 +125,30 @@ describe('chatCommand', () => {
       await chatCommand();
 
       expect(mockProfileManager.listProfiles).toHaveBeenCalled();
-      expect(mockInquirer.prompt).toHaveBeenCalledWith([{
-        type: 'list',
-        name: 'selectedProfile',
-        message: 'Select a profile to chat with:',
-        choices: expect.any(Array),
-        pageSize: 10
-      }]);
+      expect(mockInquirer.prompt).toHaveBeenCalledWith([
+        {
+          type: 'list',
+          name: 'selectedProfile',
+          message: 'Select a profile to chat with:',
+          choices: expect.any(Array),
+          pageSize: 10,
+        },
+      ]);
     });
 
     test('should auto-select single profile', async () => {
-      const mockProfile = createMockProfile({ id: 'single', name: 'Single Profile' });
+      const mockProfile = createMockProfile({
+        id: 'single',
+        name: 'Single Profile',
+      });
       mockProfileManager.listProfiles.mockResolvedValue([mockProfile]);
       mockConfigManager.getCurrentProvider.mockReturnValue(null);
 
       await chatCommand();
 
-      expect(consoleLogs.some(log => log.includes('Using profile: Single Profile'))).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Using profile: Single Profile'))
+      ).toBe(true);
       expect(mockInquirer.prompt).not.toHaveBeenCalled();
     });
 
@@ -135,7 +157,11 @@ describe('chatCommand', () => {
 
       await chatCommand();
 
-      expect(consoleLogs.some(log => log.includes('No profiles found. Create one with:'))).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes('No profiles found. Create one with:')
+        )
+      ).toBe(true);
       expect(consoleLogs.some(log => log.includes('cgem create'))).toBe(true);
       expect(processExitCode).toBe(0);
     });
@@ -145,8 +171,12 @@ describe('chatCommand', () => {
     test('should handle missing profile name', async () => {
       await chatCommand('');
 
-      expect(consoleErrors.some(log => log.includes('Profile name is required'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Usage: cgem chat <profile-name>'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Profile name is required'))
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Usage: cgem chat <profile-name>'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
       expect(mockProfileManager.getProfile).not.toHaveBeenCalled();
     });
@@ -154,14 +184,18 @@ describe('chatCommand', () => {
     test('should handle null profile name', async () => {
       await chatCommand(null as any);
 
-      expect(consoleErrors.some(log => log.includes('Profile name is required'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Profile name is required'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
     test('should handle undefined profile name', async () => {
       await chatCommand(undefined as any);
 
-      expect(consoleErrors.some(log => log.includes('Profile name is required'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Profile name is required'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
   });
@@ -172,9 +206,19 @@ describe('chatCommand', () => {
 
       await chatCommand('non-existent-profile');
 
-      expect(mockProfileManager.getProfile).toHaveBeenCalledWith('non-existent-profile');
-      expect(consoleErrors.some(log => log.includes("Profile 'non-existent-profile' not found"))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('List available profiles with: cgem list'))).toBe(true);
+      expect(mockProfileManager.getProfile).toHaveBeenCalledWith(
+        'non-existent-profile'
+      );
+      expect(
+        consoleErrors.some(log =>
+          log.includes("Profile 'non-existent-profile' not found")
+        )
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes('List available profiles with: cgem list')
+        )
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -185,7 +229,9 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(mockProfileManager.getProfile).toHaveBeenCalledWith('Test Profile');
+      expect(mockProfileManager.getProfile).toHaveBeenCalledWith(
+        'Test Profile'
+      );
       expect(processExitCode).toBe(1); // Due to missing provider
     });
   });
@@ -208,8 +254,14 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('No AI model configured'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Configure a model first with: cgem model'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('No AI model configured'))
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes('Configure a model first with: cgem model')
+        )
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -219,7 +271,9 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('No AI model configured'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('No AI model configured'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -229,7 +283,9 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('No AI model configured'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('No AI model configured'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -240,8 +296,12 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('openai API key not found'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Environment: OPENAI_API_KEY'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('openai API key not found'))
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Environment: OPENAI_API_KEY'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -252,8 +312,12 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('anthropic API key not found'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Environment: ANTHROPIC_API_KEY'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('anthropic API key not found'))
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Environment: ANTHROPIC_API_KEY'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -264,8 +328,14 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('google API key not found'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Environment: GOOGLE_GENERATIVE_AI_API_KEY'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('google API key not found'))
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes('Environment: GOOGLE_GENERATIVE_AI_API_KEY')
+        )
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
   });
@@ -285,7 +355,7 @@ describe('chatCommand', () => {
       mockConfigManager.getCurrentModel.mockReturnValue('gpt-4o');
       mockConfigManager.getProviderApiKey.mockReturnValue('test-api-key');
       mockProfileManager.updateLastUsed.mockResolvedValue(undefined);
-      
+
       // Mock immediate exit to avoid infinite loop
       mockInquirer.__setMockResponses({ userMessage: 'exit' });
     });
@@ -293,18 +363,31 @@ describe('chatCommand', () => {
     test('should initialize chat successfully', async () => {
       await chatCommand('Test Profile');
 
-      expect(MockAIClient).toHaveBeenCalledWith({
-        provider: 'openai',
-        model: 'gpt-4o',
-        maxTokens: 1000,
-      }, 'test-api-key');
+      expect(MockAIClient).toHaveBeenCalledWith(
+        {
+          provider: 'openai',
+          model: 'gpt-4o',
+          maxTokens: 1000,
+        },
+        'test-api-key'
+      );
 
-      expect(mockProfileManager.updateLastUsed).toHaveBeenCalledWith('Test Profile');
-      
-      expect(consoleLogs.some(log => log.includes('Starting conversation with Test Profile'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Provider: openai'))).toBe(true);
+      expect(mockProfileManager.updateLastUsed).toHaveBeenCalledWith(
+        'Test Profile'
+      );
+
+      expect(
+        consoleLogs.some(log =>
+          log.includes('Starting conversation with Test Profile')
+        )
+      ).toBe(true);
+      expect(consoleLogs.some(log => log.includes('Provider: openai'))).toBe(
+        true
+      );
       expect(consoleLogs.some(log => log.includes('Model: gpt-4o'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Type "exit" or "quit" to end'))).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Type "exit" or "quit" to end'))
+      ).toBe(true);
     });
 
     test('should handle profile without maxTokens', async () => {
@@ -318,11 +401,14 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(MockAIClient).toHaveBeenCalledWith({
-        provider: 'openai',
-        model: 'gpt-4o',
-        maxTokens: undefined,
-      }, 'test-api-key');
+      expect(MockAIClient).toHaveBeenCalledWith(
+        {
+          provider: 'openai',
+          model: 'gpt-4o',
+          maxTokens: undefined,
+        },
+        'test-api-key'
+      );
     });
   });
 
@@ -366,7 +452,7 @@ describe('chatCommand', () => {
       await chatCommand('Test Profile');
 
       expect(consoleLogs.some(log => log.includes('Goodbye! 👋'))).toBe(true);
-      
+
       // Reset and test QUIT
       jest.clearAllMocks();
       consoleLogs = [];
@@ -382,16 +468,16 @@ describe('chatCommand', () => {
       mockInquirer.prompt.mockImplementation((questions: any) => {
         promptCallCount++;
         const question = Array.isArray(questions) ? questions[0] : questions;
-        
+
         if (promptCallCount === 1) {
           // Test validation function
           expect(question.validate('')).toBe('Please enter a message');
           expect(question.validate('   ')).toBe('Please enter a message');
           expect(question.validate('valid message')).toBe(true);
-          
+
           return Promise.resolve({ userMessage: 'exit' });
         }
-        
+
         return Promise.resolve({ userMessage: 'exit' });
       });
 
@@ -418,7 +504,7 @@ describe('chatCommand', () => {
       expect(mockAIClient.sendMessage).toHaveBeenCalledWith(
         [
           { role: 'system', content: 'You are a test assistant.' },
-          { role: 'user', content: 'Hello AI' }
+          { role: 'user', content: 'Hello AI' },
         ],
         expect.any(Function)
       );
@@ -437,12 +523,14 @@ describe('chatCommand', () => {
         }
       });
 
-      mockAIClient.sendMessage.mockImplementation((messages: any, onChunk: any) => {
-        onChunk('Hello ');
-        onChunk('from ');
-        onChunk('AI!');
-        return Promise.resolve('Hello from AI!');
-      });
+      mockAIClient.sendMessage.mockImplementation(
+        (messages: any, onChunk: any) => {
+          onChunk('Hello ');
+          onChunk('from ');
+          onChunk('AI!');
+          return Promise.resolve('Hello from AI!');
+        }
+      );
 
       await chatCommand('Test Profile');
 
@@ -464,7 +552,9 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleLogs.some(log => log.includes('No response from AI'))).toBe(true);
+      expect(consoleLogs.some(log => log.includes('No response from AI'))).toBe(
+        true
+      );
     });
 
     test('should handle null AI response', async () => {
@@ -482,7 +572,9 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleLogs.some(log => log.includes('No response from AI'))).toBe(true);
+      expect(consoleLogs.some(log => log.includes('No response from AI'))).toBe(
+        true
+      );
     });
 
     test('should handle AI errors and continue conversation', async () => {
@@ -504,9 +596,17 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('Error getting AI response:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('API rate limit exceeded'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('You can continue the conversation'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error getting AI response:'))
+      ).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('API rate limit exceeded'))
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes('You can continue the conversation')
+        )
+      ).toBe(true);
       expect(mockAIClient.sendMessage).toHaveBeenCalledTimes(2);
     });
 
@@ -525,8 +625,12 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('Error getting AI response:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Unknown error'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error getting AI response:'))
+      ).toBe(true);
+      expect(consoleErrors.some(log => log.includes('Unknown error'))).toBe(
+        true
+      );
     });
 
     test('should maintain conversation state correctly', async () => {
@@ -549,21 +653,23 @@ describe('chatCommand', () => {
       await chatCommand('Test Profile');
 
       // Check first call
-      expect(mockAIClient.sendMessage).toHaveBeenNthCalledWith(1,
+      expect(mockAIClient.sendMessage).toHaveBeenNthCalledWith(
+        1,
         [
           { role: 'system', content: 'You are a test assistant.' },
-          { role: 'user', content: 'First question' }
+          { role: 'user', content: 'First question' },
         ],
         expect.any(Function)
       );
 
       // Check second call includes conversation history
-      expect(mockAIClient.sendMessage).toHaveBeenNthCalledWith(2,
+      expect(mockAIClient.sendMessage).toHaveBeenNthCalledWith(
+        2,
         [
           { role: 'system', content: 'You are a test assistant.' },
           { role: 'user', content: 'First question' },
           { role: 'assistant', content: 'First response' },
-          { role: 'user', content: 'Follow up question' }
+          { role: 'user', content: 'Follow up question' },
         ],
         expect.any(Function)
       );
@@ -577,8 +683,12 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('Error starting chat:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Failed to read profile file'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error starting chat:'))
+      ).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Failed to read profile file'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -588,14 +698,18 @@ describe('chatCommand', () => {
       mockConfigManager.getCurrentProvider.mockReturnValue('openai');
       mockConfigManager.getCurrentModel.mockReturnValue('gpt-4o');
       mockConfigManager.getProviderApiKey.mockReturnValue('test-api-key');
-      
+
       const error = new Error('Failed to update profile');
       mockProfileManager.updateLastUsed.mockRejectedValue(error);
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('Error starting chat:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Failed to update profile'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error starting chat:'))
+      ).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Failed to update profile'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -606,7 +720,7 @@ describe('chatCommand', () => {
       mockConfigManager.getCurrentModel.mockReturnValue('gpt-4o');
       mockConfigManager.getProviderApiKey.mockReturnValue('test-api-key');
       mockProfileManager.updateLastUsed.mockResolvedValue(undefined);
-      
+
       const error = new Error('Failed to initialize AI client');
       MockAIClient.mockImplementation(() => {
         throw error;
@@ -614,8 +728,14 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('Error starting chat:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Failed to initialize AI client'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error starting chat:'))
+      ).toBe(true);
+      expect(
+        consoleErrors.some(log =>
+          log.includes('Failed to initialize AI client')
+        )
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -624,8 +744,12 @@ describe('chatCommand', () => {
 
       await chatCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('Error starting chat:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Unknown error'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error starting chat:'))
+      ).toBe(true);
+      expect(consoleErrors.some(log => log.includes('Unknown error'))).toBe(
+        true
+      );
       expect(processExitCode).toBe(1);
     });
   });
@@ -649,12 +773,12 @@ describe('chatCommand', () => {
     test('should use correct inquirer prompt configuration', async () => {
       mockInquirer.prompt.mockImplementation((questions: any) => {
         const question = Array.isArray(questions) ? questions[0] : questions;
-        
+
         expect(question.type).toBe('input');
         expect(question.name).toBe('userMessage');
         expect(question.message).toContain('You:');
         expect(typeof question.validate).toBe('function');
-        
+
         return Promise.resolve({ userMessage: 'exit' });
       });
 
@@ -666,8 +790,12 @@ describe('chatCommand', () => {
     test('should display correct provider and model information', async () => {
       await chatCommand('Test Profile');
 
-      expect(consoleLogs.some(log => log.includes('Provider: anthropic'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Model: claude-3-haiku'))).toBe(true);
+      expect(consoleLogs.some(log => log.includes('Provider: anthropic'))).toBe(
+        true
+      );
+      expect(
+        consoleLogs.some(log => log.includes('Model: claude-3-haiku'))
+      ).toBe(true);
     });
   });
 });

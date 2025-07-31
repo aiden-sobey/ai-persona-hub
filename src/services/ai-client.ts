@@ -15,10 +15,11 @@ export class AIClient {
 
   private createAgent(apiKey: string): Agent {
     const model = this.getProviderModel(apiKey);
-    
+
     return new Agent({
       name: 'Custom Profile Agent',
-      instructions: 'You are a helpful AI assistant. Follow the system prompt provided in the conversation.',
+      instructions:
+        'You are a helpful AI assistant. Follow the system prompt provided in the conversation.',
       model,
     });
   }
@@ -47,17 +48,18 @@ export class AIClient {
     try {
       // Get the last user message and build context from previous messages
       const userMessage = messages[messages.length - 1]?.content || '';
-      const systemPrompt = messages.find(m => m.role === 'system')?.content || '';
-      
+      const systemPrompt =
+        messages.find(m => m.role === 'system')?.content || '';
+
       // Build conversation context
       const conversationHistory = messages
         .filter(m => m.role !== 'system')
         .map(m => `${m.role}: ${m.content}`)
         .join('\n');
 
-      const fullPrompt = systemPrompt ? 
-        `${systemPrompt}\n\nConversation history:\n${conversationHistory}\n\nUser: ${userMessage}` :
-        `Conversation history:\n${conversationHistory}\n\nUser: ${userMessage}`;
+      const fullPrompt = systemPrompt
+        ? `${systemPrompt}\n\nConversation history:\n${conversationHistory}\n\nUser: ${userMessage}`
+        : `Conversation history:\n${conversationHistory}\n\nUser: ${userMessage}`;
 
       // Use the agent's generate method
       const result = await this.agent.generate(fullPrompt, {
@@ -75,11 +77,13 @@ export class AIClient {
       }
 
       return response;
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof Error) {
         throw new Error(`AI API error: ${error.message}`);
       }
-      throw new Error('Unknown error occurred while communicating with AI provider');
+      throw new Error(
+        'Unknown error occurred while communicating with AI provider'
+      );
     }
   }
 
@@ -87,7 +91,7 @@ export class AIClient {
     try {
       await this.agent.generate('Hello', { maxTokens: 1 });
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -103,26 +107,17 @@ export class AIClient {
   static getAvailableModels(provider: AIProvider): string[] {
     switch (provider) {
       case 'openai':
-        return [
-          'gpt-4o',
-          'gpt-4o-mini',
-          'gpt-4-turbo',
-          'gpt-3.5-turbo'
-        ];
+        return ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'];
       case 'anthropic':
         return [
           'claude-3-5-sonnet-20241022',
           'claude-3-5-haiku-20241022',
           'claude-3-opus-20240229',
           'claude-3-sonnet-20240229',
-          'claude-3-haiku-20240307'
+          'claude-3-haiku-20240307',
         ];
       case 'google':
-        return [
-          'gemini-1.5-flash',
-          'gemini-1.5-pro',
-          'gemini-1.0-pro'
-        ];
+        return ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro'];
       default:
         return [];
     }

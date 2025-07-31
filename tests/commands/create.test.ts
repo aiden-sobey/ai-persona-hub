@@ -1,4 +1,11 @@
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import {
+  describe,
+  test,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
 import { createCommand } from '../../src/commands/create';
 import { ProfileManager } from '../../src/services/profile-manager';
 import { createMockProfile } from '../setup/test-utils';
@@ -27,26 +34,26 @@ describe('createCommand', () => {
     // Reset mocks
     mockInquirer.__resetMocks();
     MockProfileManager.mockClear();
-    
+
     // Create mock profile manager instance
     mockProfileManager = {
       createProfile: jest.fn(),
     };
     MockProfileManager.mockImplementation(() => mockProfileManager);
-    
+
     // Mock console methods
     consoleLogs = [];
     consoleErrors = [];
     processExitCode = undefined;
-    
+
     console.log = jest.fn((message: string) => {
       consoleLogs.push(message);
     });
-    
+
     console.error = jest.fn((message: string) => {
       consoleErrors.push(message);
     });
-    
+
     process.exit = jest.fn((code?: number) => {
       processExitCode = code;
       return undefined as never;
@@ -73,7 +80,7 @@ describe('createCommand', () => {
       mockInquirer.__setMockResponses({
         value: 'Test Profile', // This will be used for all three prompts in sequence
       });
-      
+
       // Override specific responses for each prompt call
       let promptCallCount = 0;
       mockInquirer.prompt.mockImplementation(() => {
@@ -100,9 +107,15 @@ describe('createCommand', () => {
         maxTokens: 1000,
       });
 
-      expect(consoleLogs.some(log => log.includes('Profile created successfully!'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Profile ID: test-profile'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('cgem chat Test Profile'))).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Profile created successfully!'))
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Profile ID: test-profile'))
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('cgem chat Test Profile'))
+      ).toBe(true);
     });
 
     test('should handle optional max tokens', async () => {
@@ -145,16 +158,18 @@ describe('createCommand', () => {
         promptCallCount++;
         if (promptCallCount === 1) {
           // Test validation function for empty name
-          const nameQuestion = Array.isArray(questions) ? questions[0] : questions;
+          const nameQuestion = Array.isArray(questions)
+            ? questions[0]
+            : questions;
           const validation = nameQuestion.validate('');
           expect(validation).toBe('Profile name is required');
-          
+
           const validationTrimmed = nameQuestion.validate('   ');
           expect(validationTrimmed).toBe('Profile name is required');
-          
+
           const validValidation = nameQuestion.validate('Valid Name');
           expect(validValidation).toBe(true);
-          
+
           return Promise.resolve({ value: 'Valid Name' });
         }
         // Continue with other prompts
@@ -171,7 +186,7 @@ describe('createCommand', () => {
       mockProfileManager.createProfile.mockResolvedValue(createMockProfile());
 
       await createCommand();
-      
+
       expect(mockProfileManager.createProfile).toHaveBeenCalled();
     });
 
@@ -180,15 +195,17 @@ describe('createCommand', () => {
       mockInquirer.prompt.mockImplementation((questions: any) => {
         promptCallCount++;
         if (promptCallCount === 1) {
-          const nameQuestion = Array.isArray(questions) ? questions[0] : questions;
+          const nameQuestion = Array.isArray(questions)
+            ? questions[0]
+            : questions;
           const longName = 'a'.repeat(51);
           const validation = nameQuestion.validate(longName);
           expect(validation).toBe('Profile name must be 50 characters or less');
-          
+
           const validName = 'a'.repeat(50);
           const validValidation = nameQuestion.validate(validName);
           expect(validValidation).toBe(true);
-          
+
           return Promise.resolve({ value: 'Valid Name' });
         }
         switch (promptCallCount) {
@@ -211,16 +228,18 @@ describe('createCommand', () => {
       mockInquirer.prompt.mockImplementation((questions: any) => {
         promptCallCount++;
         if (promptCallCount === 2) {
-          const promptQuestion = Array.isArray(questions) ? questions[0] : questions;
+          const promptQuestion = Array.isArray(questions)
+            ? questions[0]
+            : questions;
           const validation = promptQuestion.validate('');
           expect(validation).toBe('System prompt is required');
-          
+
           const validationTrimmed = promptQuestion.validate('   ');
           expect(validationTrimmed).toBe('System prompt is required');
-          
+
           const validValidation = promptQuestion.validate('Valid prompt');
           expect(validValidation).toBe(true);
-          
+
           return Promise.resolve({ value: 'Valid prompt' });
         }
         switch (promptCallCount) {
@@ -243,26 +262,28 @@ describe('createCommand', () => {
       mockInquirer.prompt.mockImplementation((questions: any) => {
         promptCallCount++;
         if (promptCallCount === 3) {
-          const tokensQuestion = Array.isArray(questions) ? questions[0] : questions;
+          const tokensQuestion = Array.isArray(questions)
+            ? questions[0]
+            : questions;
           // 0 is falsy, so it passes validation
           const validation1 = tokensQuestion.validate(0);
           expect(validation1).toBe(true);
-          
+
           const validation2 = tokensQuestion.validate(8193);
           expect(validation2).toBe('Max tokens must be between 1 and 8192');
-          
+
           const validValidation1 = tokensQuestion.validate(1);
           expect(validValidation1).toBe(true);
-          
+
           const validValidation2 = tokensQuestion.validate(8192);
           expect(validValidation2).toBe(true);
-          
+
           const validValidation3 = tokensQuestion.validate(undefined);
           expect(validValidation3).toBe(true);
-          
+
           const validation4 = tokensQuestion.validate(-1);
           expect(validation4).toBe('Max tokens must be between 1 and 8192');
-          
+
           return Promise.resolve({ value: 1000 });
         }
         switch (promptCallCount) {
@@ -303,8 +324,12 @@ describe('createCommand', () => {
 
       await createCommand();
 
-      expect(consoleErrors.some(log => log.includes('Error creating profile:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Profile already exists'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error creating profile:'))
+      ).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Profile already exists'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -324,12 +349,18 @@ describe('createCommand', () => {
         }
       });
 
-      mockProfileManager.createProfile.mockRejectedValue('Unknown error string');
+      mockProfileManager.createProfile.mockRejectedValue(
+        'Unknown error string'
+      );
 
       await createCommand();
 
-      expect(consoleErrors.some(log => log.includes('Error creating profile:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Unknown error'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error creating profile:'))
+      ).toBe(true);
+      expect(consoleErrors.some(log => log.includes('Unknown error'))).toBe(
+        true
+      );
       expect(processExitCode).toBe(1);
     });
   });
@@ -355,7 +386,9 @@ describe('createCommand', () => {
 
       await createCommand();
 
-      expect(consoleLogs.some(log => log.includes('Creating a new AI profile'))).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Creating a new AI profile'))
+      ).toBe(true);
     });
 
     test('should use correct inquirer prompt configuration', async () => {
@@ -363,7 +396,7 @@ describe('createCommand', () => {
       mockInquirer.prompt.mockImplementation((questions: any) => {
         promptCallCount++;
         const question = Array.isArray(questions) ? questions[0] : questions;
-        
+
         if (promptCallCount === 1) {
           // Check name prompt configuration
           expect(question.type).toBe('input');
@@ -384,7 +417,7 @@ describe('createCommand', () => {
           expect(question.default).toBe(1000);
           expect(typeof question.validate).toBe('function');
         }
-        
+
         switch (promptCallCount) {
           case 1:
             return Promise.resolve({ value: 'Test Profile' });

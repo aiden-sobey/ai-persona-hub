@@ -1,13 +1,15 @@
 import { jest } from '@jest/globals';
 
 // Mock file system state
-let mockFileSystem = new Map<string, string>();
-let mockDirectories = new Set<string>();
+const mockFileSystem = new Map<string, string>();
+const mockDirectories = new Set<string>();
 
 // Mock fs methods
-export const readFileSync = jest.fn((path: string, encoding?: string) => {
+export const readFileSync = jest.fn((path: string, _encoding?: string) => {
   if (!mockFileSystem.has(path)) {
-    const error = new Error(`ENOENT: no such file or directory, open '${path}'`) as any;
+    const error = new Error(
+      `ENOENT: no such file or directory, open '${path}'`
+    ) as any;
     error.code = 'ENOENT';
     error.errno = -2;
     error.syscall = 'open';
@@ -25,13 +27,15 @@ export const existsSync = jest.fn((path: string) => {
   return mockFileSystem.has(path) || mockDirectories.has(path);
 });
 
-export const mkdirSync = jest.fn((path: string, options?: any) => {
+export const mkdirSync = jest.fn((path: string, _options?: any) => {
   mockDirectories.add(path);
 });
 
 export const unlinkSync = jest.fn((path: string) => {
   if (!mockFileSystem.has(path)) {
-    const error = new Error(`ENOENT: no such file or directory, unlink '${path}'`) as any;
+    const error = new Error(
+      `ENOENT: no such file or directory, unlink '${path}'`
+    ) as any;
     error.code = 'ENOENT';
     error.errno = -2;
     error.syscall = 'unlink';

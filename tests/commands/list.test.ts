@@ -1,7 +1,14 @@
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import {
+  describe,
+  test,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
 import { listCommand } from '../../src/commands/list';
 import { ProfileManager } from '../../src/services/profile-manager';
-import { createMockProfile, createMockProfiles } from '../setup/test-utils';
+import { createMockProfile, _createMockProfiles } from '../setup/test-utils';
 
 // Mock ProfileManager
 jest.mock('../../src/services/profile-manager');
@@ -21,26 +28,26 @@ describe('listCommand', () => {
   beforeEach(() => {
     // Reset mocks
     MockProfileManager.mockClear();
-    
+
     // Create mock profile manager instance
     mockProfileManager = {
       listProfiles: jest.fn(),
     };
     MockProfileManager.mockImplementation(() => mockProfileManager);
-    
+
     // Mock console methods
     consoleLogs = [];
     consoleErrors = [];
     processExitCode = undefined;
-    
+
     console.log = jest.fn((message: string) => {
       consoleLogs.push(message);
     });
-    
+
     console.error = jest.fn((message: string) => {
       consoleErrors.push(message);
     });
-    
+
     process.exit = jest.fn((code?: number) => {
       processExitCode = code;
       return undefined as never;
@@ -61,7 +68,9 @@ describe('listCommand', () => {
       await listCommand();
 
       expect(mockProfileManager.listProfiles).toHaveBeenCalled();
-      expect(consoleLogs.some(log => log.includes('No profiles found'))).toBe(true);
+      expect(consoleLogs.some(log => log.includes('No profiles found'))).toBe(
+        true
+      );
       expect(consoleLogs.some(log => log.includes('cgem create'))).toBe(true);
     });
   });
@@ -81,14 +90,32 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      expect(consoleLogs.some(log => log.includes('Available profiles (1)'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('• Test Profile'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('ID: test-profile'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Created: 1/15/2024'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Last used: 1/16/2024'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Max tokens: 1000'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Prompt: You are a helpful test assistant.'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('cgem chat <profile-name>'))).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Available profiles (1)'))
+      ).toBe(true);
+      expect(consoleLogs.some(log => log.includes('• Test Profile'))).toBe(
+        true
+      );
+      expect(consoleLogs.some(log => log.includes('ID: test-profile'))).toBe(
+        true
+      );
+      expect(consoleLogs.some(log => log.includes('Created: 1/15/2024'))).toBe(
+        true
+      );
+      expect(
+        consoleLogs.some(log => log.includes('Last used: 1/16/2024'))
+      ).toBe(true);
+      expect(consoleLogs.some(log => log.includes('Max tokens: 1000'))).toBe(
+        true
+      );
+      expect(
+        consoleLogs.some(log =>
+          log.includes('Prompt: You are a helpful test assistant.')
+        )
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('cgem chat <profile-name>'))
+      ).toBe(true);
     });
 
     test('should display multiple profiles', async () => {
@@ -111,7 +138,9 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      expect(consoleLogs.some(log => log.includes('Available profiles (2)'))).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Available profiles (2)'))
+      ).toBe(true);
       expect(consoleLogs.some(log => log.includes('• Profile One'))).toBe(true);
       expect(consoleLogs.some(log => log.includes('• Profile Two'))).toBe(true);
       expect(consoleLogs.some(log => log.includes('ID: profile-1'))).toBe(true);
@@ -126,7 +155,7 @@ describe('listCommand', () => {
         createdAt: '2024-01-15T10:00:00.000Z',
         // No lastUsed or maxTokens
       });
-      
+
       // Remove optional fields
       delete (mockProfile as any).lastUsed;
       delete (mockProfile as any).maxTokens;
@@ -135,18 +164,27 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      expect(consoleLogs.some(log => log.includes('• Minimal Profile'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('ID: minimal-profile'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Created: 1/15/2024'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Prompt: Basic prompt'))).toBe(true);
-      
+      expect(consoleLogs.some(log => log.includes('• Minimal Profile'))).toBe(
+        true
+      );
+      expect(consoleLogs.some(log => log.includes('ID: minimal-profile'))).toBe(
+        true
+      );
+      expect(consoleLogs.some(log => log.includes('Created: 1/15/2024'))).toBe(
+        true
+      );
+      expect(
+        consoleLogs.some(log => log.includes('Prompt: Basic prompt'))
+      ).toBe(true);
+
       // Should not contain optional fields
       expect(consoleLogs.some(log => log.includes('Last used:'))).toBe(false);
       expect(consoleLogs.some(log => log.includes('Max tokens:'))).toBe(false);
     });
 
     test('should truncate long system prompts', async () => {
-      const longPrompt = 'This is a very long system prompt that exceeds 100 characters and should be truncated with ellipsis to make it more readable in the list view';
+      const longPrompt =
+        'This is a very long system prompt that exceeds 100 characters and should be truncated with ellipsis to make it more readable in the list view';
       const mockProfile = createMockProfile({
         id: 'long-prompt-profile',
         name: 'Long Prompt Profile',
@@ -158,7 +196,13 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      expect(consoleLogs.some(log => log.includes('Prompt: This is a very long system prompt that exceeds 100 characters and should be truncated with elli...'))).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes(
+            'Prompt: This is a very long system prompt that exceeds 100 characters and should be truncated with elli...'
+          )
+        )
+      ).toBe(true);
       expect(consoleLogs.some(log => log.includes(longPrompt))).toBe(false);
     });
 
@@ -175,7 +219,9 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      expect(consoleLogs.some(log => log.includes(`Prompt: ${shortPrompt}`))).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes(`Prompt: ${shortPrompt}`))
+      ).toBe(true);
       expect(consoleLogs.some(log => log.includes('...'))).toBe(false);
     });
 
@@ -192,8 +238,12 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      expect(consoleLogs.some(log => log.includes('Created: 12/25/2024'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Last used: 12/31/2024'))).toBe(true);
+      expect(consoleLogs.some(log => log.includes('Created: 12/25/2024'))).toBe(
+        true
+      );
+      expect(
+        consoleLogs.some(log => log.includes('Last used: 12/31/2024'))
+      ).toBe(true);
     });
 
     test('should handle profiles with maxTokens = 0', async () => {
@@ -219,8 +269,12 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      expect(consoleLogs.some(log => log.includes('Start a conversation with:'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('cgem chat <profile-name>'))).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Start a conversation with:'))
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('cgem chat <profile-name>'))
+      ).toBe(true);
     });
   });
 
@@ -231,8 +285,14 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      expect(consoleErrors.some(log => log.includes('Error listing profiles:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Failed to read profiles directory'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error listing profiles:'))
+      ).toBe(true);
+      expect(
+        consoleErrors.some(log =>
+          log.includes('Failed to read profiles directory')
+        )
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -241,8 +301,12 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      expect(consoleErrors.some(log => log.includes('Error listing profiles:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Unknown error'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error listing profiles:'))
+      ).toBe(true);
+      expect(consoleErrors.some(log => log.includes('Unknown error'))).toBe(
+        true
+      );
       expect(processExitCode).toBe(1);
     });
 
@@ -275,7 +339,9 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      const profileNames = consoleLogs.filter(log => log.includes('•')).map(log => log.trim());
+      const profileNames = consoleLogs
+        .filter(log => log.includes('•'))
+        .map(log => log.trim());
       expect(profileNames[0]).toContain('Z Profile');
       expect(profileNames[1]).toContain('A Profile');
     });
@@ -292,7 +358,11 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      expect(consoleLogs.some(log => log.includes('• Profile with "quotes" & special chars!'))).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes('• Profile with "quotes" & special chars!')
+        )
+      ).toBe(true);
     });
 
     test('should handle empty string fields gracefully', async () => {
@@ -307,7 +377,9 @@ describe('listCommand', () => {
 
       await listCommand();
 
-      expect(consoleLogs.some(log => log.includes('• Empty Fields Profile'))).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('• Empty Fields Profile'))
+      ).toBe(true);
       expect(consoleLogs.some(log => log.includes('Prompt: '))).toBe(true);
     });
   });

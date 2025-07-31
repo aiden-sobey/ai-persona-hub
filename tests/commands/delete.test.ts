@@ -1,4 +1,11 @@
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import {
+  describe,
+  test,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
 import { deleteCommand } from '../../src/commands/delete';
 import { ProfileManager } from '../../src/services/profile-manager';
 import { createMockProfile } from '../setup/test-utils';
@@ -27,27 +34,27 @@ describe('deleteCommand', () => {
     // Reset mocks
     mockInquirer.__resetMocks();
     MockProfileManager.mockClear();
-    
+
     // Create mock profile manager instance
     mockProfileManager = {
       getProfile: jest.fn(),
       deleteProfile: jest.fn(),
     };
     MockProfileManager.mockImplementation(() => mockProfileManager);
-    
+
     // Mock console methods
     consoleLogs = [];
     consoleErrors = [];
     processExitCode = undefined;
-    
+
     console.log = jest.fn((message: string) => {
       consoleLogs.push(message);
     });
-    
+
     console.error = jest.fn((message: string) => {
       consoleErrors.push(message);
     });
-    
+
     process.exit = jest.fn((code?: number) => {
       processExitCode = code;
       return undefined as never;
@@ -65,8 +72,14 @@ describe('deleteCommand', () => {
     test('should handle missing profile name', async () => {
       await deleteCommand('');
 
-      expect(consoleErrors.some(log => log.includes('Profile name is required'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Usage: cgem delete <profile-name>'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Profile name is required'))
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes('Usage: cgem delete <profile-name>')
+        )
+      ).toBe(true);
       expect(processExitCode).toBe(1);
       expect(mockProfileManager.getProfile).not.toHaveBeenCalled();
     });
@@ -74,14 +87,18 @@ describe('deleteCommand', () => {
     test('should handle null profile name', async () => {
       await deleteCommand(null as any);
 
-      expect(consoleErrors.some(log => log.includes('Profile name is required'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Profile name is required'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
     test('should handle undefined profile name', async () => {
       await deleteCommand(undefined as any);
 
-      expect(consoleErrors.some(log => log.includes('Profile name is required'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Profile name is required'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
   });
@@ -92,8 +109,14 @@ describe('deleteCommand', () => {
 
       await deleteCommand('non-existent-profile');
 
-      expect(mockProfileManager.getProfile).toHaveBeenCalledWith('non-existent-profile');
-      expect(consoleErrors.some(log => log.includes("Profile 'non-existent-profile' not found"))).toBe(true);
+      expect(mockProfileManager.getProfile).toHaveBeenCalledWith(
+        'non-existent-profile'
+      );
+      expect(
+        consoleErrors.some(log =>
+          log.includes("Profile 'non-existent-profile' not found")
+        )
+      ).toBe(true);
       expect(processExitCode).toBe(1);
       expect(mockInquirer.prompt).not.toHaveBeenCalled();
     });
@@ -111,7 +134,9 @@ describe('deleteCommand', () => {
 
       await deleteCommand('Test Profile');
 
-      expect(mockProfileManager.getProfile).toHaveBeenCalledWith('Test Profile');
+      expect(mockProfileManager.getProfile).toHaveBeenCalledWith(
+        'Test Profile'
+      );
       expect(mockInquirer.prompt).toHaveBeenCalled();
     });
   });
@@ -131,11 +156,23 @@ describe('deleteCommand', () => {
 
       await deleteCommand('Full Profile');
 
-      expect(consoleLogs.some(log => log.includes('You are about to delete the profile:'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Name: Full Profile'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('ID: full-profile'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Created: 1/15/2024'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Max tokens: 2000'))).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes('You are about to delete the profile:')
+        )
+      ).toBe(true);
+      expect(consoleLogs.some(log => log.includes('Name: Full Profile'))).toBe(
+        true
+      );
+      expect(consoleLogs.some(log => log.includes('ID: full-profile'))).toBe(
+        true
+      );
+      expect(consoleLogs.some(log => log.includes('Created: 1/15/2024'))).toBe(
+        true
+      );
+      expect(consoleLogs.some(log => log.includes('Max tokens: 2000'))).toBe(
+        true
+      );
     });
 
     test('should display profile information without optional fields', async () => {
@@ -145,7 +182,7 @@ describe('deleteCommand', () => {
         systemPrompt: 'Basic profile',
         createdAt: '2024-01-15T10:00:00.000Z',
       });
-      
+
       // Remove optional fields
       delete (mockProfile as any).maxTokens;
 
@@ -154,9 +191,15 @@ describe('deleteCommand', () => {
 
       await deleteCommand('Minimal Profile');
 
-      expect(consoleLogs.some(log => log.includes('Name: Minimal Profile'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('ID: minimal-profile'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes('Created: 1/15/2024'))).toBe(true);
+      expect(
+        consoleLogs.some(log => log.includes('Name: Minimal Profile'))
+      ).toBe(true);
+      expect(consoleLogs.some(log => log.includes('ID: minimal-profile'))).toBe(
+        true
+      );
+      expect(consoleLogs.some(log => log.includes('Created: 1/15/2024'))).toBe(
+        true
+      );
       expect(consoleLogs.some(log => log.includes('Max tokens:'))).toBe(false);
     });
 
@@ -195,12 +238,14 @@ describe('deleteCommand', () => {
     test('should use correct confirmation prompt configuration', async () => {
       mockInquirer.prompt.mockImplementation((questions: any) => {
         const question = Array.isArray(questions) ? questions[0] : questions;
-        
+
         expect(question.type).toBe('confirm');
         expect(question.name).toBe('confirmed');
-        expect(question.message).toBe('Are you sure you want to delete this profile?');
+        expect(question.message).toBe(
+          'Are you sure you want to delete this profile?'
+        );
         expect(question.default).toBe(false);
-        
+
         return Promise.resolve({ confirmed: false });
       });
 
@@ -214,7 +259,9 @@ describe('deleteCommand', () => {
 
       await deleteCommand('Test Profile');
 
-      expect(consoleLogs.some(log => log.includes('Deletion cancelled.'))).toBe(true);
+      expect(consoleLogs.some(log => log.includes('Deletion cancelled.'))).toBe(
+        true
+      );
       expect(mockProfileManager.deleteProfile).not.toHaveBeenCalled();
       expect(processExitCode).toBeUndefined();
     });
@@ -225,8 +272,14 @@ describe('deleteCommand', () => {
 
       await deleteCommand('Test Profile');
 
-      expect(mockProfileManager.deleteProfile).toHaveBeenCalledWith('Test Profile');
-      expect(consoleLogs.some(log => log.includes("Profile 'Test Profile' deleted successfully"))).toBe(true);
+      expect(mockProfileManager.deleteProfile).toHaveBeenCalledWith(
+        'Test Profile'
+      );
+      expect(
+        consoleLogs.some(log =>
+          log.includes("Profile 'Test Profile' deleted successfully")
+        )
+      ).toBe(true);
     });
   });
 
@@ -249,8 +302,14 @@ describe('deleteCommand', () => {
 
       await deleteCommand('Test Profile');
 
-      expect(mockProfileManager.deleteProfile).toHaveBeenCalledWith('Test Profile');
-      expect(consoleLogs.some(log => log.includes("Profile 'Test Profile' deleted successfully"))).toBe(true);
+      expect(mockProfileManager.deleteProfile).toHaveBeenCalledWith(
+        'Test Profile'
+      );
+      expect(
+        consoleLogs.some(log =>
+          log.includes("Profile 'Test Profile' deleted successfully")
+        )
+      ).toBe(true);
       expect(processExitCode).toBeUndefined();
     });
 
@@ -259,8 +318,12 @@ describe('deleteCommand', () => {
 
       await deleteCommand('Test Profile');
 
-      expect(mockProfileManager.deleteProfile).toHaveBeenCalledWith('Test Profile');
-      expect(consoleErrors.some(log => log.includes('Failed to delete profile'))).toBe(true);
+      expect(mockProfileManager.deleteProfile).toHaveBeenCalledWith(
+        'Test Profile'
+      );
+      expect(
+        consoleErrors.some(log => log.includes('Failed to delete profile'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -272,13 +335,17 @@ describe('deleteCommand', () => {
         systemPrompt: 'Test prompt',
         createdAt: '2024-01-15T10:00:00.000Z',
       });
-      
+
       mockProfileManager.getProfile.mockResolvedValue(mockProfile);
       mockProfileManager.deleteProfile.mockResolvedValue(true);
 
       await deleteCommand('test-profile'); // Using ID instead of name
 
-      expect(consoleLogs.some(log => log.includes("Profile 'Actual Profile Name' deleted successfully"))).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes("Profile 'Actual Profile Name' deleted successfully")
+        )
+      ).toBe(true);
     });
   });
 
@@ -289,8 +356,12 @@ describe('deleteCommand', () => {
 
       await deleteCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('Error deleting profile:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Failed to read profile file'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error deleting profile:'))
+      ).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Failed to read profile file'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -298,28 +369,36 @@ describe('deleteCommand', () => {
       const mockProfile = createMockProfile();
       mockProfileManager.getProfile.mockResolvedValue(mockProfile);
       mockInquirer.__setMockResponses({ confirmed: true });
-      
+
       const error = new Error('Permission denied');
       mockProfileManager.deleteProfile.mockRejectedValue(error);
 
       await deleteCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('Error deleting profile:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Permission denied'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error deleting profile:'))
+      ).toBe(true);
+      expect(consoleErrors.some(log => log.includes('Permission denied'))).toBe(
+        true
+      );
       expect(processExitCode).toBe(1);
     });
 
     test('should handle inquirer errors', async () => {
       const mockProfile = createMockProfile();
       mockProfileManager.getProfile.mockResolvedValue(mockProfile);
-      
+
       const error = new Error('Inquirer prompt failed');
       mockInquirer.prompt.mockRejectedValue(error);
 
       await deleteCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('Error deleting profile:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Inquirer prompt failed'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error deleting profile:'))
+      ).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Inquirer prompt failed'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
 
@@ -328,8 +407,12 @@ describe('deleteCommand', () => {
 
       await deleteCommand('Test Profile');
 
-      expect(consoleErrors.some(log => log.includes('Error deleting profile:'))).toBe(true);
-      expect(consoleErrors.some(log => log.includes('Unknown error'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Error deleting profile:'))
+      ).toBe(true);
+      expect(consoleErrors.some(log => log.includes('Unknown error'))).toBe(
+        true
+      );
       expect(processExitCode).toBe(1);
     });
   });
@@ -348,7 +431,9 @@ describe('deleteCommand', () => {
 
       await deleteCommand('Date Test Profile');
 
-      expect(consoleLogs.some(log => log.includes('Created: 12/25/2024'))).toBe(true);
+      expect(consoleLogs.some(log => log.includes('Created: 12/25/2024'))).toBe(
+        true
+      );
     });
   });
 
@@ -367,14 +452,26 @@ describe('deleteCommand', () => {
 
       await deleteCommand('special-profile');
 
-      expect(consoleLogs.some(log => log.includes('Name: Profile with "quotes" & special chars!'))).toBe(true);
-      expect(consoleLogs.some(log => log.includes("Profile 'Profile with \"quotes\" & special chars!' deleted successfully"))).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes('Name: Profile with "quotes" & special chars!')
+        )
+      ).toBe(true);
+      expect(
+        consoleLogs.some(log =>
+          log.includes(
+            'Profile \'Profile with "quotes" & special chars!\' deleted successfully'
+          )
+        )
+      ).toBe(true);
     });
 
     test('should handle empty profile name parameter after normalization', async () => {
       await deleteCommand('   '); // Whitespace-only
 
-      expect(consoleErrors.some(log => log.includes('Profile name is required'))).toBe(true);
+      expect(
+        consoleErrors.some(log => log.includes('Profile name is required'))
+      ).toBe(true);
       expect(processExitCode).toBe(1);
     });
   });

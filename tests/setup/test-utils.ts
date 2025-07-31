@@ -1,7 +1,9 @@
 import { AIProfile, AIProvider } from '../../src/types';
 
 // Mock data generators
-export const createMockProfile = (overrides: Partial<AIProfile> = {}): AIProfile => ({
+export const createMockProfile = (
+  overrides: Partial<AIProfile> = {}
+): AIProfile => ({
   id: 'test-profile',
   name: 'Test Profile',
   systemPrompt: 'You are a helpful test assistant.',
@@ -12,7 +14,7 @@ export const createMockProfile = (overrides: Partial<AIProfile> = {}): AIProfile
 });
 
 export const createMockProfiles = (count: number = 3): AIProfile[] => {
-  return Array.from({ length: count }, (_, i) => 
+  return Array.from({ length: count }, (_, i) =>
     createMockProfile({
       id: `test-profile-${i + 1}`,
       name: `Test Profile ${i + 1}`,
@@ -24,7 +26,7 @@ export const createMockProfiles = (count: number = 3): AIProfile[] => {
 // Mock file system data
 export const createMockFileSystem = () => {
   const files = new Map<string, string>();
-  
+
   return {
     files,
     setFile: (path: string, content: string) => files.set(path, content),
@@ -49,7 +51,9 @@ export const createMockInquirerResponses = (responses: Record<string, any>) => {
     } else {
       // Single question
       const questionName = questions.name || 'value';
-      return Promise.resolve({ [questionName]: responses[questionName] || responses.value });
+      return Promise.resolve({
+        [questionName]: responses[questionName] || responses.value,
+      });
     }
   });
 };
@@ -100,7 +104,10 @@ export const getConsoleOutput = () => {
   };
 };
 
-export const expectConsoleToContain = (method: 'log' | 'error' | 'warn' | 'info', text: string) => {
+export const expectConsoleToContain = (
+  method: 'log' | 'error' | 'warn' | 'info',
+  text: string
+) => {
   const calls = (global.console as any)[method].mock.calls;
   const found = calls.some((call: any[]) =>
     call.some((arg: any) => typeof arg === 'string' && arg.includes(text))
@@ -109,16 +116,17 @@ export const expectConsoleToContain = (method: 'log' | 'error' | 'warn' | 'info'
 };
 
 // Async test helpers
-export const waitForAsync = () => new Promise(resolve => setTimeout(resolve, 0));
+export const waitForAsync = () =>
+  new Promise(resolve => setTimeout(resolve, 0));
 
 // Mock process.exit
 export const mockProcessExit = () => {
   const mockExit = jest.fn().mockImplementation((code?: number) => {
     throw new Error(`Process exit called with code: ${code || 0}`);
   });
-  
+
   // Type assertion to avoid TypeScript errors
   (process as any).exit = mockExit;
-  
+
   return mockExit;
 };

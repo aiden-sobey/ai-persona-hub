@@ -34,7 +34,7 @@ export class ConfigManager {
     try {
       const data = fs.readFileSync(this.configPath, 'utf-8');
       return JSON.parse(data);
-    } catch (error) {
+    } catch (_error) {
       return {};
     }
   }
@@ -45,10 +45,10 @@ export class ConfigManager {
 
   getProviderApiKey(provider: AIProvider): string {
     const config = this.getConfig();
-    
+
     // Check config file first
     if (config.providers?.[provider]?.apiKey) {
-      return config.providers[provider]!.apiKey;
+      return config.providers[provider].apiKey;
     }
 
     // Fallback to environment variables
@@ -72,7 +72,7 @@ export class ConfigManager {
     if (!config.providers[provider]) {
       config.providers[provider] = { apiKey: '' };
     }
-    config.providers[provider]!.apiKey = apiKey;
+    config.providers[provider].apiKey = apiKey;
     this.setConfig(config);
   }
 
@@ -83,13 +83,13 @@ export class ConfigManager {
   getAvailableProviders(): AIProvider[] {
     const providers: AIProvider[] = [];
     const allProviders: AIProvider[] = ['openai', 'anthropic', 'google'];
-    
+
     for (const provider of allProviders) {
       if (this.hasValidApiKey(provider)) {
         providers.push(provider);
       }
     }
-    
+
     return providers;
   }
 

@@ -12,7 +12,9 @@ const program = new Command();
 
 program
   .name('cgem')
-  .description('AI Profile CLI - Create custom AI profiles with multiple AI providers')
+  .description(
+    'AI Profile CLI - Create custom AI profiles with multiple AI providers'
+  )
   .version('1.0.0');
 
 program
@@ -47,7 +49,7 @@ modelCmd
   .description('List available AI models')
   .action(modelListCommand);
 
-program.on('command:*', (operands) => {
+program.on('command:*', operands => {
   console.error(chalk.red(`Unknown command: ${operands[0]}`));
   console.log(chalk.gray('Run "cgem --help" for available commands'));
   process.exit(1);

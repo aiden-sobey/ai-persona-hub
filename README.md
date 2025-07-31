@@ -1,17 +1,18 @@
-# Custom Gems - AI Profile CLI
+# AI Persona Hub
 
-A command-line interface for creating and managing custom AI profiles powered by multiple AI providers through the Mastra framework.
+Inspired by Gemini Gems, this is a command-line interface for creating and managing custom AI profiles that can be run on multiple AI providers, allowing you to use the power of Gems with the AI of your choice.
 
 ## Features
 
 - 🔮 Create custom AI profiles with personalized system prompts
-- 🤖 **Multi-Provider Support**: OpenAI, Anthropic (Claude), Google (Gemini)
-- 💬 Interactive chat sessions with your AI profiles
-- 📋 List and manage all your profiles
+- 🤖 **Multi-Provider Support**
+  - OpenAI (ChatGPT)
+  - Anthropic (Claude)
+  - Google (Gemini)
+- 💬 Interactive CLI chat sessions with your AI profiles
 - 🔄 **Dynamic Model Switching**: Change AI provider/model anytime without recreating profiles
-- 🔧 Configurable max tokens per profile
 - 💾 Local JSON-based profile storage
-- ⚡ Powered by Mastra AI framework
+- ⚡ Powered by [Mastra AI](https://mastra.ai/) framework
 
 ## Installation
 

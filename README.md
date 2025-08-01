@@ -41,6 +41,7 @@ export GOOGLE_GENERATIVE_AI_API_KEY="your-google-key"
 ```
 
 Or make use of `~/.cgem/config.json`:
+
 ```json
 {
   "providers": {
@@ -59,7 +60,6 @@ Or make use of `~/.cgem/config.json`:
   "defaultMaxTokens": 1000
 }
 ```
-
 
 ### Configuration
 
@@ -98,9 +98,9 @@ Feel free to open a PR expanding the list.
 ## Development
 
 For this project I recommend:
+
 - NPM version 11.5.2
 - Node version v24.1.0
-
 
 First, clone the repository and install dependencies:
 

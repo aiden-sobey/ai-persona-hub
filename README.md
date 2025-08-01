@@ -10,25 +10,24 @@ Inspired by Gemini Gems, this is a command-line interface for creating and manag
   - Anthropic (Claude)
   - Google (Gemini)
 - 💬 Interactive CLI chat sessions with your AI profiles
-- 🔄 **Dynamic Model Switching**: Change AI provider/model anytime without recreating profiles
+- 🔄 **Dynamic Models**: Change AI provider/model anytime without recreating profiles
 - 💾 Local JSON-based profile storage
 - ⚡ Powered by [Mastra AI](https://mastra.ai/) framework
 
-## Installation
+## Usage
 
-1. Clone the repository and install dependencies:
+### Installation
 
-```bash
-npm install
-```
-
-2. Build the project:
+Install the package and verify:
 
 ```bash
-npm run build
+npm install -g ai-persona-hub
+cgem --help
 ```
 
-3. Set up API keys for your preferred providers:
+### Connect Providers
+
+Set up API keys for your preferred providers:
 
 ```bash
 # OpenAI
@@ -41,68 +40,7 @@ export ANTHROPIC_API_KEY="your-anthropic-key"
 export GOOGLE_GENERATIVE_AI_API_KEY="your-google-key"
 ```
 
-## Usage
-
-### Configure AI model (required first step)
-
-```bash
-./bin/cgem model
-```
-
-_Select your preferred AI provider and model_
-
-### Create a new profile
-
-```bash
-./bin/cgem create
-```
-
-_Create a custom AI profile with system prompt (works with any model)_
-
-### List all profiles
-
-```bash
-./bin/cgem list
-```
-
-### Start a chat with a profile
-
-```bash
-./bin/cgem chat <profile-name>
-```
-
-_Chat with any profile using your currently configured model_
-
-### List available models
-
-```bash
-./bin/cgem model list
-```
-
-### Delete a profile
-
-```bash
-./bin/cgem delete <profile-name>
-```
-
-## Supported AI Providers & Models
-
-[See Here](https://github.com/aiden-sobey/ai-persona-hub/blob/main/src/types/index.ts#L40)
-
-## Configuration
-
-### API Keys
-
-Set API keys via environment variables or in `~/.cgem/config.json`:
-
-**Environment Variables:**
-
-- `OPENAI_API_KEY` - OpenAI API key
-- `ANTHROPIC_API_KEY` - Anthropic API key
-- `GOOGLE_GENERATIVE_AI_API_KEY` - Google AI API key
-
-**Config File Example** (`~/.cgem/config.json`):
-
+Or make use of `~/.cgem/config.json`:
 ```json
 {
   "providers": {
@@ -122,11 +60,52 @@ Set API keys via environment variables or in `~/.cgem/config.json`:
 }
 ```
 
-### Profile Storage
 
-Profiles are stored in `./profiles/` directory
+### Configuration
+
+_Select your preferred AI provider and model_
+
+```bash
+cgem model
+```
+
+_Create a custom AI profile using a system prompt_
+
+```bash
+cgem create
+```
+
+_Chat with any profile using your currently configured model_
+
+```bash
+cgem chat <profile-name>
+```
+
+### All commands
+
+```bash
+cgem model         # Configure AI provider/model (required first step)
+cgem create        # Create new AI profile
+cgem list          # List all profiles
+cgem chat <name>   # Chat with specific profile
+cgem delete <name> # Delete profile
+```
+
+[See all supported models here](https://github.com/aiden-sobey/ai-persona-hub/blob/main/src/types/index.ts#L40)
+
+Feel free to open a PR expanding the list.
 
 ## Development
+
+First, clone the repository and install dependencies:
+
+```bash
+git clone git@github.com:aiden-sobey/ai-persona-hub.git
+cd ai-persona-hub
+npm install
+```
+
+To run the project:
 
 ```bash
 # Watch mode during development
@@ -139,7 +118,11 @@ npm run build
 npm start
 ```
 
-## Profile Structure
+## Profiles
+
+Profiles are stored in `./profiles/` directory
+
+### Structure
 
 Profiles are stored as JSON files with the following structure:
 

@@ -24,7 +24,7 @@
     "test:verbose": "jest --verbose",
     "lint:fix": "eslint . --ext .ts --fix && prettier --write .",
     "lint:check": "eslint . --ext .ts && prettier --check .",
-    "prepublish": "npm run lint:check && npm run test && npm run build"
+    "validate": "npm run lint:check && npm run test && npm run build"
   },
   "keywords": [
     "ai",

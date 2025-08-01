@@ -1,10 +1,18 @@
 {
-  "name": "custom-gems",
+  "name": "ai-persona-hub",
   "version": "1.0.0",
-  "description": "AI Profile CLI - Create custom AI profiles with multiple AI providers",
+  "description": "AI Profile CLI - Create custom AI profiles run against dynamic LLM providers",
   "main": "dist/index.js",
   "bin": {
-    "cgem": "./bin/cgem"
+    "cgem": "bin/cgem"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aiden-sobey/ai-persona-hub.git"
+  },
+  "homepage": "https://github.com/aiden-sobey/ai-persona-hub#readme",
+  "bugs": {
+    "url": "https://github.com/aiden-sobey/ai-persona-hub/issues"
   },
   "scripts": {
     "build": "tsc",
@@ -15,19 +23,21 @@
     "test:coverage": "jest --coverage",
     "test:verbose": "jest --verbose",
     "lint:fix": "eslint . --ext .ts --fix && prettier --write .",
-    "lint:check": "eslint . --ext .ts && prettier --check ."
+    "lint:check": "eslint . --ext .ts && prettier --check .",
+    "prepublish": "npm run lint:check && npm run test && npm run build"
   },
   "keywords": [
     "ai",
     "cli",
     "mastra",
+    "gems",
     "profiles",
     "typescript",
     "openai",
     "claude",
     "gemini"
   ],
-  "author": "",
+  "author": "Your Name <your.email@example.com>",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {

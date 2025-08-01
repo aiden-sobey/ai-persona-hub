@@ -35,8 +35,19 @@ npm run lint:check     # Check for linting/formatting violations without fixing
 - `npm run build`
   Always run these commands after making code changes to ensure code quality standards are met.
 
-### CLI Usage (after build)
+### CLI Usage
 
+**Global Installation:**
+```bash
+npm install -g ai-persona-hub
+cgem model       # Configure AI provider/model (required first step)
+cgem create      # Create new AI profile
+cgem list        # List all profiles
+cgem chat <name> # Chat with specific profile
+cgem delete <name> # Delete profile
+```
+
+**Development Usage (after build):**
 ```bash
 ./bin/cgem model       # Configure AI provider/model (required first step)
 ./bin/cgem create      # Create new AI profile

@@ -32,6 +32,15 @@ describe('AIClient', () => {
   let originalEnv: NodeJS.ProcessEnv;
   let testProfile: AIProfile;
 
+  // Helper function to create a mock stream response
+  const createMockStream = (chunks: string[]) => ({
+    textStream: (async function* () {
+      for (const chunk of chunks) {
+        yield chunk;
+      }
+    })(),
+  });
+
   beforeEach(() => {
     originalEnv = { ...process.env };
 
@@ -45,9 +54,7 @@ describe('AIClient', () => {
 
     // Reset mock agent
     mockAgent = {
-      generate: jest
-        .fn<() => Promise<{ text: string }>>()
-        .mockResolvedValue({ text: 'Mock AI response' }),
+      stream: jest.fn(),
     };
     MockAgent.mockReturnValue(mockAgent);
     MockAgent.mockClear();
@@ -141,16 +148,17 @@ describe('AIClient', () => {
         { role: 'user', content: 'Hello, world!' },
       ];
 
-      mockAgent.generate.mockResolvedValue({
-        text: 'Hello! How can I help you?',
-      });
+      mockAgent.stream.mockResolvedValue(
+        createMockStream(['Hello! How can I help you?'])
+      );
 
       const response = await client.sendMessage(messages);
 
       expect(response).toBe('Hello! How can I help you?');
-      expect(mockAgent.generate).toHaveBeenCalledWith('user: Hello, world!', {
-        maxTokens: 1000,
-      });
+      expect(mockAgent.stream).toHaveBeenCalledWith(
+        [{ role: 'user', content: 'Hello, world!' }],
+        { maxTokens: 1000 }
+      );
     });
 
     test('should handle streaming with callback', async () => {
@@ -160,12 +168,14 @@ describe('AIClient', () => {
       const chunks: string[] = [];
       const onChunk = (chunk: string) => chunks.push(chunk);
 
-      mockAgent.generate.mockResolvedValue({ text: 'Streaming response' });
+      mockAgent.stream.mockResolvedValue(
+        createMockStream(['Stream', 'ing ', 'response'])
+      );
 
       const response = await client.sendMessage(messages, onChunk);
 
       expect(response).toBe('Streaming response');
-      expect(chunks).toEqual(['Streaming response']);
+      expect(chunks).toEqual(['Stream', 'ing ', 'response']);
     });
 
     test('should handle conversation history correctly', async () => {
@@ -176,14 +186,17 @@ describe('AIClient', () => {
         { role: 'user', content: 'What about 3+3?' },
       ];
 
+      mockAgent.stream.mockResolvedValue(createMockStream(['6']));
+
       await client.sendMessage(messages);
 
-      const expectedPrompt =
-        'user: What is 2+2?\n' +
-        'assistant: 2+2 equals 4.\n' +
-        'user: What about 3+3?';
+      const expectedMessages = [
+        { role: 'user', content: 'What is 2+2?' },
+        { role: 'assistant', content: '2+2 equals 4.' },
+        { role: 'user', content: 'What about 3+3?' },
+      ];
 
-      expect(mockAgent.generate).toHaveBeenCalledWith(expectedPrompt, {
+      expect(mockAgent.stream).toHaveBeenCalledWith(expectedMessages, {
         maxTokens: 1000,
       });
     });
@@ -191,12 +204,14 @@ describe('AIClient', () => {
     test('should handle messages without system prompt', async () => {
       const messages: ChatMessage[] = [{ role: 'user', content: 'Hello!' }];
 
+      mockAgent.stream.mockResolvedValue(createMockStream(['Hi there!']));
+
       await client.sendMessage(messages);
 
-      const expectedPrompt = 'user: Hello!';
-      expect(mockAgent.generate).toHaveBeenCalledWith(expectedPrompt, {
-        maxTokens: 1000,
-      });
+      expect(mockAgent.stream).toHaveBeenCalledWith(
+        [{ role: 'user', content: 'Hello!' }],
+        { maxTokens: 1000 }
+      );
     });
 
     test('should throw error when AI request fails', async () => {
@@ -205,7 +220,7 @@ describe('AIClient', () => {
       ];
 
       const aiError = new Error('API rate limit exceeded');
-      mockAgent.generate.mockRejectedValue(aiError);
+      mockAgent.stream.mockRejectedValue(aiError);
 
       await expect(client.sendMessage(messages)).rejects.toThrow(
         'AI API error: API rate limit exceeded'
@@ -217,7 +232,7 @@ describe('AIClient', () => {
         { role: 'user', content: 'Test message' },
       ];
 
-      mockAgent.generate.mockRejectedValue('Unknown error');
+      mockAgent.stream.mockRejectedValue('Unknown error');
 
       await expect(client.sendMessage(messages)).rejects.toThrow(
         'Unknown error occurred while communicating with AI provider'
@@ -237,18 +252,19 @@ describe('AIClient', () => {
     });
 
     test('should return true for successful connection', async () => {
-      mockAgent.generate.mockResolvedValue({ text: 'Hello' });
+      mockAgent.stream.mockResolvedValue(createMockStream(['Hello']));
 
       const result = await client.validateConnection();
 
       expect(result).toBe(true);
-      expect(mockAgent.generate).toHaveBeenCalledWith('Hello', {
-        maxTokens: 1,
-      });
+      expect(mockAgent.stream).toHaveBeenCalledWith(
+        [{ role: 'user', content: 'Hello' }],
+        { maxTokens: 1 }
+      );
     });
 
     test('should return false for failed connection', async () => {
-      mockAgent.generate.mockRejectedValue(new Error('Connection failed'));
+      mockAgent.stream.mockRejectedValue(new Error('Connection failed'));
 
       const result = await client.validateConnection();
 

@@ -157,7 +157,7 @@ export async function chatCommand(profileName?: string): Promise<void> {
         });
 
         try {
-          console.log(chalk.blue('AI:'), chalk.gray('thinking...'));
+          console.log(chalk.blue('AI:'), chalk.gray('thinking...\n'));
 
           const response = await aiClient.sendMessage(
             conversationState.messages,

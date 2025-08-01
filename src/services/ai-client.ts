@@ -47,28 +47,27 @@ export class AIClient {
     onChunk?: (chunk: string) => void
   ): Promise<string> {
     try {
-      // Build conversation context from messages (excluding system messages as they're in Agent instructions)
-      const conversationHistory = messages
-        .filter(m => m.role !== 'system')
-        .map(m => `${m.role}: ${m.content}`)
-        .join('\n');
+      // Filter out system messages as they're handled by Agent instructions
+      const conversationMessages = messages.filter(m => m.role !== 'system');
 
-      // Use the agent's generate method
-      const result = await this.agent.generate(conversationHistory, {
+      // Use the agent's stream method for real-time streaming
+      const stream = await this.agent.stream(conversationMessages, {
         maxTokens: this.config.maxTokens,
       });
 
-      // Extract the text from the result
-      const response = result.text;
+      let fullResponse = '';
 
-      // Handle streaming if callback is provided
-      if (onChunk) {
-        // For now, return the full response and call onChunk with it
-        // In a real implementation, you'd implement proper streaming
-        onChunk(response);
+      // Stream the response in real-time
+      for await (const chunk of stream.textStream) {
+        fullResponse += chunk;
+
+        // Call the chunk callback if provided (for real-time streaming to console)
+        if (onChunk) {
+          onChunk(chunk);
+        }
       }
 
-      return response;
+      return fullResponse;
     } catch (_error) {
       if (_error instanceof Error) {
         throw new Error(`AI API error: ${_error.message}`);
@@ -81,7 +80,14 @@ export class AIClient {
 
   async validateConnection(): Promise<boolean> {
     try {
-      await this.agent.generate('Hello', { maxTokens: 1 });
+      const stream = await this.agent.stream(
+        [{ role: 'user', content: 'Hello' }],
+        { maxTokens: 1 }
+      );
+      // Just consume the first chunk to test the connection
+      for await (const _chunk of stream.textStream) {
+        break; // Exit after first chunk to minimize usage
+      }
       return true;
     } catch (_error) {
       return false;

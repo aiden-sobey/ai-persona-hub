@@ -66,9 +66,11 @@ export async function modelCommand(): Promise<void> {
       message: 'Select model:',
       choices: availableModels,
       default:
-        currentModel && availableModels.includes(currentModel)
+        currentModel &&
+        availableModels &&
+        availableModels.includes(currentModel)
           ? currentModel
-          : availableModels[0],
+          : availableModels && availableModels[0],
     },
   ]);
 
@@ -109,7 +111,7 @@ export async function modelListCommand(): Promise<void> {
   }
 
   if (availableProviders.length === 0) {
-    console.log(chalk.red('❌ No AI providers configured'));
+    console.error(chalk.red('❌ No AI providers configured'));
     console.log(
       chalk.gray('Please set up API keys for at least one provider:')
     );

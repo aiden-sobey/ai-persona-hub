@@ -3,7 +3,6 @@ import chalk from 'chalk';
 import { ProfileManager } from '../services/profile-manager';
 import { ConfigManager } from '../utils/config';
 import { AIClient } from '../services/ai-client';
-import { ConversationState } from '../types';
 import { ChatHistoryManager } from '../services/chat-history-manager';
 import { ChatInputHandler } from '../services/chat-input-handler';
 
@@ -107,11 +106,6 @@ export async function chatCommand(profileName?: string): Promise<void> {
       apiKey
     );
 
-    const conversationState: ConversationState = {
-      profileId: profile.id,
-      messages: [],
-    };
-
     // Initialize chat history manager and load history
     const chatHistoryManager = new ChatHistoryManager();
     const chatHistory = await chatHistoryManager.loadChatHistory(profile.id);
@@ -151,16 +145,11 @@ export async function chatCommand(profileName?: string): Promise<void> {
         // Save the user message to history
         await chatHistoryManager.addUserMessage(profile.id, userMessage.trim());
 
-        conversationState.messages.push({
-          role: 'user',
-          content: userMessage,
-        });
-
         try {
           console.log(chalk.blue('AI:'), chalk.gray('thinking...\n'));
 
           const response = await aiClient.sendMessage(
-            conversationState.messages,
+            userMessage,
             (chunk: string) => {
               process.stdout.write(chunk);
             }
@@ -170,11 +159,6 @@ export async function chatCommand(profileName?: string): Promise<void> {
             console.log(chalk.red('\n❌ No response from AI'));
             continue;
           }
-
-          conversationState.messages.push({
-            role: 'assistant',
-            content: response,
-          });
 
           console.log('\n');
         } catch (error) {
@@ -193,16 +177,8 @@ export async function chatCommand(profileName?: string): Promise<void> {
       // Clean up input handler
       inputHandler.close();
 
-      // Save the full conversation if it has user messages
-      const userMessages = conversationState.messages.filter(
-        m => m.role === 'user'
-      );
-      if (userMessages.length > 0) {
-        await chatHistoryManager.saveConversation(
-          profile.id,
-          conversationState.messages
-        );
-      }
+      // Note: Conversation history is now automatically managed by agent memory
+      // The ChatHistoryManager still tracks user input history for the input handler
     }
   } catch (error) {
     console.error(chalk.red('❌ Error starting chat:'));

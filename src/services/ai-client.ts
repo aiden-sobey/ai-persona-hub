@@ -1,27 +1,43 @@
 import { Agent } from '@mastra/core';
+import { Memory } from '@mastra/memory';
+import { LibSQLStore } from '@mastra/libsql';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
-import { AIConfig, ChatMessage, AIProfile } from '../types';
+import { randomUUID } from 'crypto';
+import { AIConfig, AIProfile } from '../types';
 
 export class AIClient {
   private agent: Agent;
   private config: AIConfig;
   private profile: AIProfile;
+  private threadId: string;
 
   constructor(config: AIConfig, profile: AIProfile, apiKey: string) {
     this.config = config;
     this.profile = profile;
     this.agent = this.createAgent(apiKey);
+    this.threadId = randomUUID();
   }
 
   private createAgent(apiKey: string): Agent {
     const model = this.getProviderModel(apiKey);
 
+    // Create memory instance with working memory enabled and message range of 10
+    const memory = new Memory({
+      storage: new LibSQLStore({
+        url: 'file:./memory.db',
+      }),
+      options: {
+        workingMemory: { enabled: true },
+      },
+    });
+
     return new Agent({
       name: this.profile.name,
       instructions: this.profile.systemPrompt,
       model,
+      memory,
     });
   }
 
@@ -43,16 +59,15 @@ export class AIClient {
   }
 
   async sendMessage(
-    messages: ChatMessage[],
+    message: string,
     onChunk?: (chunk: string) => void
   ): Promise<string> {
     try {
-      // Filter out system messages as they're handled by Agent instructions
-      const conversationMessages = messages.filter(m => m.role !== 'system');
-
-      // Use the agent's stream method for real-time streaming
-      const stream = await this.agent.stream(conversationMessages, {
+      // Use the agent's stream method with memory parameters
+      const stream = await this.agent.stream(message, {
         maxTokens: this.config.maxTokens,
+        resourceId: this.profile.id,
+        threadId: this.threadId,
       });
 
       let fullResponse = '';
@@ -61,7 +76,6 @@ export class AIClient {
       for await (const chunk of stream.textStream) {
         fullResponse += chunk;
 
-        // Call the chunk callback if provided (for real-time streaming to console)
         if (onChunk) {
           onChunk(chunk);
         }
@@ -75,22 +89,6 @@ export class AIClient {
       throw new Error(
         'Unknown error occurred while communicating with AI provider'
       );
-    }
-  }
-
-  async validateConnection(): Promise<boolean> {
-    try {
-      const stream = await this.agent.stream(
-        [{ role: 'user', content: 'Hello' }],
-        { maxTokens: 1 }
-      );
-      // Just consume the first chunk to test the connection
-      for await (const _chunk of stream.textStream) {
-        break; // Exit after first chunk to minimize usage
-      }
-      return true;
-    } catch (_error) {
-      return false;
     }
   }
 

@@ -97,6 +97,11 @@ Feel free to open a PR expanding the list.
 
 ## Development
 
+For this project I recommend:
+- NPM version 11.5.2
+- Node version v24.1.0
+
+
 First, clone the repository and install dependencies:
 
 ```bash

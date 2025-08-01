@@ -29,10 +29,11 @@ npm run lint:check     # Check for linting/formatting violations without fixing
 ```
 
 **IMPORTANT**: The following commands must all pass (exit code 0) before any task is considered completed by Claude:
+
 - `npm run lint:check`
 - `npm run test`
 - `npm run build`
-Always run these commands after making code changes to ensure code quality standards are met.
+  Always run these commands after making code changes to ensure code quality standards are met.
 
 ### CLI Usage (after build)
 

@@ -103,17 +103,13 @@ export async function chatCommand(profileName?: string): Promise<void> {
         model: currentModel,
         maxTokens: profile.maxTokens,
       },
+      profile,
       apiKey
     );
 
     const conversationState: ConversationState = {
       profileId: profile.id,
-      messages: [
-        {
-          role: 'system',
-          content: profile.systemPrompt,
-        },
-      ],
+      messages: [],
     };
 
     // Initialize chat history manager and load history

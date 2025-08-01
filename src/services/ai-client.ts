@@ -2,14 +2,16 @@ import { Agent } from '@mastra/core';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
-import { AIConfig, ChatMessage } from '../types';
+import { AIConfig, ChatMessage, AIProfile } from '../types';
 
 export class AIClient {
   private agent: Agent;
   private config: AIConfig;
+  private profile: AIProfile;
 
-  constructor(config: AIConfig, apiKey: string) {
+  constructor(config: AIConfig, profile: AIProfile, apiKey: string) {
     this.config = config;
+    this.profile = profile;
     this.agent = this.createAgent(apiKey);
   }
 
@@ -17,9 +19,8 @@ export class AIClient {
     const model = this.getProviderModel(apiKey);
 
     return new Agent({
-      name: 'Custom Profile Agent',
-      instructions:
-        'You are a helpful AI assistant. Follow the system prompt provided in the conversation.',
+      name: this.profile.name,
+      instructions: this.profile.systemPrompt,
       model,
     });
   }
@@ -46,23 +47,14 @@ export class AIClient {
     onChunk?: (chunk: string) => void
   ): Promise<string> {
     try {
-      // Get the last user message and build context from previous messages
-      const userMessage = messages[messages.length - 1]?.content || '';
-      const systemPrompt =
-        messages.find(m => m.role === 'system')?.content || '';
-
-      // Build conversation context
+      // Build conversation context from messages (excluding system messages as they're in Agent instructions)
       const conversationHistory = messages
         .filter(m => m.role !== 'system')
         .map(m => `${m.role}: ${m.content}`)
         .join('\n');
 
-      const fullPrompt = systemPrompt
-        ? `${systemPrompt}\n\nConversation history:\n${conversationHistory}\n\nUser: ${userMessage}`
-        : `Conversation history:\n${conversationHistory}\n\nUser: ${userMessage}`;
-
       // Use the agent's generate method
-      const result = await this.agent.generate(fullPrompt, {
+      const result = await this.agent.generate(conversationHistory, {
         maxTokens: this.config.maxTokens,
       });
 
@@ -96,11 +88,18 @@ export class AIClient {
     }
   }
 
-  updateConfig(newConfig: Partial<AIConfig>, newApiKey?: string): void {
+  updateConfig(
+    newConfig: Partial<AIConfig>,
+    newApiKey?: string,
+    newProfile?: AIProfile
+  ): void {
     this.config = { ...this.config, ...newConfig };
+    if (newProfile) {
+      this.profile = newProfile;
+    }
     // Recreate agent with new configuration
-    if (newApiKey) {
-      this.agent = this.createAgent(newApiKey);
+    if (newApiKey || newProfile) {
+      this.agent = this.createAgent(newApiKey || '');
     }
   }
 }

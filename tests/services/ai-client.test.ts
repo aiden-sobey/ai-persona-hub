@@ -7,7 +7,7 @@ import {
   jest,
 } from '@jest/globals';
 import { AIClient } from '../../src/services/ai-client';
-import { AIConfig, ChatMessage, AIProvider } from '../../src/types';
+import { AIConfig, ChatMessage, AIProvider, AIProfile } from '../../src/types';
 
 // Mock Mastra core
 jest.mock('@mastra/core');
@@ -30,9 +30,18 @@ jest.mock('@ai-sdk/google', () => ({
 describe('AIClient', () => {
   let mockAgent: any;
   let originalEnv: NodeJS.ProcessEnv;
+  let testProfile: AIProfile;
 
   beforeEach(() => {
     originalEnv = { ...process.env };
+
+    testProfile = {
+      id: 'test-profile',
+      name: 'Test Profile',
+      systemPrompt: 'You are a test assistant.',
+      createdAt: '2024-01-01T00:00:00.000Z',
+      maxTokens: 1000,
+    };
 
     // Reset mock agent
     mockAgent = {
@@ -57,13 +66,12 @@ describe('AIClient', () => {
         maxTokens: 1000,
       };
 
-      const _client = new AIClient(config, 'test-api-key');
+      const _client = new AIClient(config, testProfile, 'test-api-key');
 
       expect(process.env.OPENAI_API_KEY).toBe('test-api-key');
       expect(MockAgent).toHaveBeenCalledWith({
-        name: 'Custom Profile Agent',
-        instructions:
-          'You are a helpful AI assistant. Follow the system prompt provided in the conversation.',
+        name: 'Test Profile',
+        instructions: 'You are a test assistant.',
         model: 'mock-openai-model',
       });
     });
@@ -75,13 +83,12 @@ describe('AIClient', () => {
         maxTokens: 2000,
       };
 
-      new AIClient(config, 'test-anthropic-key');
+      new AIClient(config, testProfile, 'test-anthropic-key');
 
       expect(process.env.ANTHROPIC_API_KEY).toBe('test-anthropic-key');
       expect(MockAgent).toHaveBeenCalledWith({
-        name: 'Custom Profile Agent',
-        instructions:
-          'You are a helpful AI assistant. Follow the system prompt provided in the conversation.',
+        name: 'Test Profile',
+        instructions: 'You are a test assistant.',
         model: 'mock-anthropic-model',
       });
     });
@@ -93,13 +100,12 @@ describe('AIClient', () => {
         maxTokens: 1500,
       };
 
-      new AIClient(config, 'test-google-key');
+      new AIClient(config, testProfile, 'test-google-key');
 
       expect(process.env.GOOGLE_GENERATIVE_AI_API_KEY).toBe('test-google-key');
       expect(MockAgent).toHaveBeenCalledWith({
-        name: 'Custom Profile Agent',
-        instructions:
-          'You are a helpful AI assistant. Follow the system prompt provided in the conversation.',
+        name: 'Test Profile',
+        instructions: 'You are a test assistant.',
         model: 'mock-google-model',
       });
     });
@@ -110,7 +116,7 @@ describe('AIClient', () => {
         model: 'some-model',
       };
 
-      expect(() => new AIClient(config, 'test-key')).toThrow(
+      expect(() => new AIClient(config, testProfile, 'test-key')).toThrow(
         'Unsupported provider: unsupported'
       );
     });
@@ -126,7 +132,7 @@ describe('AIClient', () => {
         model: 'gpt-4o-mini',
         maxTokens: 1000,
       };
-      client = new AIClient(config, 'test-key');
+      client = new AIClient(config, testProfile, 'test-key');
     });
 
     test('should send message and return response', async () => {
@@ -142,10 +148,9 @@ describe('AIClient', () => {
       const response = await client.sendMessage(messages);
 
       expect(response).toBe('Hello! How can I help you?');
-      expect(mockAgent.generate).toHaveBeenCalledWith(
-        'You are a helpful assistant.\n\nConversation history:\nuser: Hello, world!\n\nUser: Hello, world!',
-        { maxTokens: 1000 }
-      );
+      expect(mockAgent.generate).toHaveBeenCalledWith('user: Hello, world!', {
+        maxTokens: 1000,
+      });
     });
 
     test('should handle streaming with callback', async () => {
@@ -174,12 +179,9 @@ describe('AIClient', () => {
       await client.sendMessage(messages);
 
       const expectedPrompt =
-        'You are a helpful assistant.\n\n' +
-        'Conversation history:\n' +
         'user: What is 2+2?\n' +
         'assistant: 2+2 equals 4.\n' +
-        'user: What about 3+3?\n\n' +
-        'User: What about 3+3?';
+        'user: What about 3+3?';
 
       expect(mockAgent.generate).toHaveBeenCalledWith(expectedPrompt, {
         maxTokens: 1000,
@@ -191,8 +193,7 @@ describe('AIClient', () => {
 
       await client.sendMessage(messages);
 
-      const expectedPrompt =
-        'Conversation history:\nuser: Hello!\n\nUser: Hello!';
+      const expectedPrompt = 'user: Hello!';
       expect(mockAgent.generate).toHaveBeenCalledWith(expectedPrompt, {
         maxTokens: 1000,
       });
@@ -232,7 +233,7 @@ describe('AIClient', () => {
         provider: 'openai',
         model: 'gpt-4o-mini',
       };
-      client = new AIClient(config, 'test-key');
+      client = new AIClient(config, testProfile, 'test-key');
     });
 
     test('should return true for successful connection', async () => {
@@ -264,7 +265,7 @@ describe('AIClient', () => {
         model: 'gpt-4o-mini',
         maxTokens: 1000,
       };
-      client = new AIClient(config, 'test-key');
+      client = new AIClient(config, testProfile, 'test-key');
     });
 
     test('should update configuration without new API key', () => {

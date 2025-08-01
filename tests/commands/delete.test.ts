@@ -94,7 +94,9 @@ describe('deleteCommand', () => {
     });
 
     test('should handle undefined profile name', async () => {
-      await expect(deleteCommand(undefined as any)).rejects.toThrow('MOCK_EXIT_1');
+      await expect(deleteCommand(undefined as any)).rejects.toThrow(
+        'MOCK_EXIT_1'
+      );
 
       expect(
         consoleErrors.some(log => log.includes('Profile name is required'))
@@ -107,7 +109,9 @@ describe('deleteCommand', () => {
     test('should handle profile not found', async () => {
       mockProfileManager.getProfile.mockResolvedValue(null);
 
-      await expect(deleteCommand('non-existent-profile')).rejects.toThrow('MOCK_EXIT_1');
+      await expect(deleteCommand('non-existent-profile')).rejects.toThrow(
+        'MOCK_EXIT_1'
+      );
 
       expect(mockProfileManager.getProfile).toHaveBeenCalledWith(
         'non-existent-profile'
@@ -314,7 +318,9 @@ describe('deleteCommand', () => {
     test('should handle deletion failure', async () => {
       mockProfileManager.deleteProfile.mockResolvedValue(false);
 
-      await expect(deleteCommand('Test Profile')).rejects.toThrow('MOCK_EXIT_1');
+      await expect(deleteCommand('Test Profile')).rejects.toThrow(
+        'MOCK_EXIT_1'
+      );
 
       expect(mockProfileManager.deleteProfile).toHaveBeenCalledWith(
         'Test Profile'
@@ -352,7 +358,9 @@ describe('deleteCommand', () => {
       const error = new Error('Failed to read profile file');
       mockProfileManager.getProfile.mockRejectedValue(error);
 
-      await expect(deleteCommand('Test Profile')).rejects.toThrow('MOCK_EXIT_1');
+      await expect(deleteCommand('Test Profile')).rejects.toThrow(
+        'MOCK_EXIT_1'
+      );
 
       expect(
         consoleErrors.some(log => log.includes('Error deleting profile:'))
@@ -371,7 +379,9 @@ describe('deleteCommand', () => {
       const error = new Error('Permission denied');
       mockProfileManager.deleteProfile.mockRejectedValue(error);
 
-      await expect(deleteCommand('Test Profile')).rejects.toThrow('MOCK_EXIT_1');
+      await expect(deleteCommand('Test Profile')).rejects.toThrow(
+        'MOCK_EXIT_1'
+      );
 
       expect(
         consoleErrors.some(log => log.includes('Error deleting profile:'))
@@ -389,7 +399,9 @@ describe('deleteCommand', () => {
       const error = new Error('Inquirer prompt failed');
       mockInquirer.prompt.mockRejectedValue(error);
 
-      await expect(deleteCommand('Test Profile')).rejects.toThrow('MOCK_EXIT_1');
+      await expect(deleteCommand('Test Profile')).rejects.toThrow(
+        'MOCK_EXIT_1'
+      );
 
       expect(
         consoleErrors.some(log => log.includes('Error deleting profile:'))
@@ -403,7 +415,9 @@ describe('deleteCommand', () => {
     test('should handle unknown errors', async () => {
       mockProfileManager.getProfile.mockRejectedValue('Unknown error string');
 
-      await expect(deleteCommand('Test Profile')).rejects.toThrow('MOCK_EXIT_1');
+      await expect(deleteCommand('Test Profile')).rejects.toThrow(
+        'MOCK_EXIT_1'
+      );
 
       expect(
         consoleErrors.some(log => log.includes('Error deleting profile:'))

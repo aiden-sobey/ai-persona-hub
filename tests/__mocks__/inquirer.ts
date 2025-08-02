@@ -22,7 +22,8 @@ const prompt = jest.fn().mockImplementation((questions: any) => {
             result[key] = 'test-input';
             break;
           case 'confirm':
-            result[key] = true;
+            result[key] =
+              question.default !== undefined ? question.default : false;
             break;
           case 'list':
             result[key] =
@@ -53,7 +54,8 @@ const prompt = jest.fn().mockImplementation((questions: any) => {
         defaultValue = 'test-input';
         break;
       case 'confirm':
-        defaultValue = true;
+        defaultValue =
+          questions.default !== undefined ? questions.default : false;
         break;
       case 'list':
         defaultValue =
@@ -85,7 +87,7 @@ const confirm = jest.fn().mockImplementation((options: any) => {
       ? mockResponses[key]
       : options.default !== undefined
         ? options.default
-        : true
+        : false
   );
 });
 
@@ -133,13 +135,83 @@ export const __clearMockResponses = () => {
 export const __getPromptCallCount = () => promptCallCount;
 
 export const __resetMocks = () => {
-  prompt.mockClear();
-  input.mockClear();
-  confirm.mockClear();
-  select.mockClear();
-  number.mockClear();
-  editor.mockClear();
+  prompt.mockReset();
+  input.mockReset();
+  confirm.mockReset();
+  select.mockReset();
+  number.mockReset();
+  editor.mockReset();
   __clearMockResponses();
+
+  // Restore the original implementations after reset
+  prompt.mockImplementation((questions: any) => {
+    promptCallCount++;
+
+    if (Array.isArray(questions)) {
+      // Multiple questions
+      const result: Record<string, any> = {};
+      questions.forEach((question: any) => {
+        const key = question.name;
+        if (mockResponses[key] !== undefined) {
+          result[key] = mockResponses[key];
+        } else {
+          // Provide default values based on question type
+          switch (question.type) {
+            case 'input':
+              result[key] = 'test-input';
+              break;
+            case 'confirm':
+              result[key] =
+                question.default !== undefined ? question.default : false;
+              break;
+            case 'list':
+              result[key] =
+                question.choices?.[0]?.value ||
+                question.choices?.[0] ||
+                question.default;
+              break;
+            case 'number':
+              result[key] = question.default || 100;
+              break;
+            default:
+              result[key] = question.default || 'test-value';
+          }
+        }
+      });
+      return Promise.resolve(result);
+    } else {
+      // Single question
+      const key = questions.name || 'value';
+      if (mockResponses[key] !== undefined) {
+        return Promise.resolve({ [key]: mockResponses[key] });
+      }
+
+      // Provide default based on question type
+      let defaultValue: any;
+      switch (questions.type) {
+        case 'input':
+          defaultValue = 'test-input';
+          break;
+        case 'confirm':
+          defaultValue =
+            questions.default !== undefined ? questions.default : false;
+          break;
+        case 'list':
+          defaultValue =
+            questions.choices?.[0]?.value ||
+            questions.choices?.[0] ||
+            questions.default;
+          break;
+        case 'number':
+          defaultValue = questions.default || 100;
+          break;
+        default:
+          defaultValue = questions.default || 'test-value';
+      }
+
+      return Promise.resolve({ [key]: defaultValue });
+    }
+  });
 };
 
 // Export the mock inquirer module

@@ -58,7 +58,12 @@ export async function chatCommand(profileName?: string): Promise<void> {
     const profileManager = new ProfileManager();
     const configManager = new ConfigManager();
 
-    const profile = await profileManager.getProfile(selectedProfileName!);
+    if (!selectedProfileName) {
+      console.error(chalk.red('❌ No profile selected'));
+      process.exit(1);
+    }
+
+    const profile = await profileManager.getProfile(selectedProfileName);
     if (!profile) {
       console.error(chalk.red(`❌ Profile '${selectedProfileName}' not found`));
       console.log(chalk.gray('List available profiles with: cgem list'));
@@ -113,7 +118,7 @@ export async function chatCommand(profileName?: string): Promise<void> {
     // Initialize input handler with history
     const inputHandler = new ChatInputHandler(chatHistory.userMessages);
 
-    await profileManager.updateLastUsed(selectedProfileName!);
+    await profileManager.updateLastUsed(selectedProfileName);
 
     console.log(
       chalk.blue(`\n💬 Starting conversation with ${chalk.white(profile.name)}`)

@@ -37,7 +37,7 @@
     "claude",
     "gemini"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Aiden Sobey",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
